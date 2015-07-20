@@ -60,7 +60,7 @@ Be sure to call 'authorize' method inside async context, `authorize()` is sync m
 Make sure to replace `Authorization Token` with your Authorization Token for all requests that require authorization. If you use managers than this handlings will be done automatically.
 </aside>
 
-## Authorization with credentials
+## Authorization with Credentials
 
 Received `Authorization Token` has limited lifetime but long enough to not mess with reauthorization while application running. 
 It is recommended to update token when your application start.
@@ -201,6 +201,8 @@ Adds item to shopping cart. Parameters sent as json string in request body.
 <aside class="notice">
 You should use proper content type header for requests with json body `application/json; charset=UTF-8`.
 </aside>
+
+*Request body JSON parameters:*
 
 Key | Type | Description
 --------- | --------- | -----------
@@ -423,7 +425,7 @@ Shopping cart details loading requires cookie to be set in request.
 As result you'll get details to show shopping cart UI to user and proceed with checkout process.
 Results can be accesses as properties in Shoppint Cart singletones on iOS/Android SDKs, this classes have identical to JSON structure.
 
-JSON structure description:
+*Result JSON values:*
 
 Key | Type | Description
 --------- | --------- | -----------
@@ -433,17 +435,13 @@ options | object | set of shopping cart options, flags that presents different N
 settings | object | overall shopping cart settings
 billing | object | shopping cart billing settings
 
-## Calculations
-
-### Taxes
-
-### Promo codes
+## Promo codes
 
 > Loads promo code information
 
 ```objective_c
 
-	// NOTE, You should save strong refernce to the loaders
+	// NOTE, You should keep strong reference to the loaders
 	self.promoCodeLoader = [[NCPromoCodeValidate alloc] init];
 	self.promoCodeLoader.delegate = self;
 	[self.promoCodeLoader validatePromoCode:@"111111" deals:@[@2296932]];
@@ -477,15 +475,15 @@ billing | object | shopping cart billing settings
 
 ```shell
 curl \
-	-X GET \
-	-d "{\"cityId\":25221,\"dealId\":2296932,\"offers\":[]}" \
+	-X POST \
+	-d "{\"number\":111111,\"dealIds\":"2296932"}" \
 	-H "x-nimblecommerce-api-version: 7" \
 	-H "Accept: application/json; charset=UTF-8" \
 	-H "Content-Type: application/json; charset=UTF-8" \
-	https://stage.nimblebuy.com/api/shoppingCart?merchantId=78
+	https://stage.nimblebuy.com/api/shoppingCart/calculate?merchantId=78\&type=PROMO_CODE
 ```
 
-> Promo code details result JSON
+> Result JSON
 
 ```json
 {
@@ -499,14 +497,14 @@ curl \
 
 Loads promo code value for applicable deals. Will return array with deal identifiers that can apply promo code.
 
-Call parameters:
+*Request body JSON parameters:*
 
 Parameter | Type | Description
 --------- | --------- | -----------
 number | string | promo code number
 dealIds | string | deals identifiers comma separated string
 
-Result values:
+*Result JSON values:*
 
 Key | Type | Description
 --------- | --------- | -----------
@@ -514,9 +512,346 @@ amount | number | promo code amount, can represent percent value
 type | string | promo code type, `AMOUNT` or `PERCENT`
 dealIds | array | list of applicable deals
 
-### Gift cards
+## Gift cards
 
+> Loads gift card information
 
+```shell
+curl \
+	-X POST \
+	-d "{\"number\":62035,\"pin\":\"\"}" \
+	-H "x-nimblecommerce-api-version: 7" \
+	-H "Authorization: {AUTHORIZATION_TOKEN}"
+	-H "Accept: application/json; charset=UTF-8" \
+	-H "Content-Type: application/json; charset=UTF-8" \
+	https://stage.nimblebuy.com/api/shoppingCart/calculate?merchantId=78\&type=GIFT_CARD
+```
+
+```objective_c
+
+	// NOTE, You should keep strong references to the loaders
+	self.giftCardValidator = [[NCGiftCardValidate alloc] init];
+	self.giftCardValidator.delegate = self;
+	[self.giftCardValidator validateGiftCard:@"62035" pinCode:@""];
+	
+	// Implement delegated methods and process result.
+	-(void) giftCardValidationSucceed:(NCGiftCardValidate *)dataSource {
+	}
+	-(void) giftCardValidateFailed:(NCGiftCardValidate *)dataSource withError:(NSError *)error {
+	}
+```
+
+```java
+	CheckGiftCard.ResultHandler resultHandler = new CheckGiftCard.ResultHandler() {
+		@Override
+		public void onSuccess(GiftCard giftCard) {
+		// Handle success	
+		}
+		@Override
+		public void onError(String errorMessage) {
+		// Handle error
+		}
+		new CheckGiftCard(getActivity())
+				.cardNumber("62035")
+				.cardPin("")
+				.resultHandler(resultHandler)
+				.execute();
+```
+
+> Result JSON
+
+```json
+{
+  "amount": 10.0
+}
+```
+
+Checks gift card balance. Returns amount of available credits on gift card.
+
+<aside class="notice">
+Authorization required for this call, you should put valid `Authorization Token` into request headers.
+</aside>
+
+*Request body JSON parameters:*
+
+Parameter | Type | Description
+--------- | --------- | -----------
+number | string | gift card number
+pin | string | gift card pin code
+
+*Result JSON values:*
+
+Key | Type | Description
+--------- | --------- | -----------
+amount | number | gift card available balance
+
+## Taxes
+
+> Loads tax amounts for shopping cart
+
+```shell
+curl \
+	-X POST \
+	-d '{"shippingAddress":{"address":"sdflsjdklf","address2":"sjdfkjsdkfj","firstName":"laksdjflksdjf","city":"sdjfksdjfk","phone":"28348902384","zip":"90210","countryCode":"US","state":"California","lastName":"lksdjfklsdjfkl"},"dealsOrder":[{"dealId":2296952,"cityId":25221,"offers":[{"offerId":2970592,"count":1,"shippingMethodId":29352}]}]}' \
+	-H "x-nimblecommerce-api-version: 7" \
+	-H "Authorization: {AUTHORIZATION_TOKEN}" \
+	-H "Accept: application/json; charset=UTF-8" \
+	-H "Content-Type: application/json; charset=UTF-8" \
+	https://stage.nimblebuy.com/api/shoppingCart/calculateTaxAmount?merchantId=78
+```
+
+```objective_c
+	NCShoppingCartOrderDiscounts *discounts = [[NCShoppingCartOrderDiscounts alloc] init];
+	discounts.promoCode = {PROMO_CODE};
+	discounts.giftCards = {GIFT_CARDS};
+	discounts.credits = {USED_CREDITS};
+	
+	NCShoppingCartOrderInfo *orderInfo = [[NCShoppingCartOrderInfo alloc] init];
+	orderInfo.discounts = discounts;
+	orderInfo.shippingAddress = {SHIPPING_ADDRESS};
+	
+	if (isCardless) {
+		if (paymentAccount) {
+			orderInfo.paymentInfo = [NCShoppingCartPaymentInfo paymentInfoFromPaymentAccount:paymentAccount];
+		} else if (billingAddress) {
+			orderInfo.billingAddress = billingAddress;
+		}
+	} else {
+		if (hasBillingTaxes) {
+			orderInfo.taxAddress = taxAddress;
+		}
+	}
+	
+	[[NCShoppingCart cart] loadTaxAmountsWithOrderInfo:orderInfo
+											   handler:^(NSError *error, NSArray *taxAmounts) {
+												   // Handle results
+											   }];
+```
+
+```java
+	ShoppingCart.OrderInfo orderInfo = new ShoppingCart.OrderInfo();
+	orderInfo.discounts().promoCode(promoCode);
+	orderInfo.discounts().giftCards(giftCards());
+	orderInfo.discounts().credits(creditsUsed());
+	if (isCardless) {
+		orderInfo.taxAddress(taxAddress);
+	} else {
+		if (null != paymentInfo()) {
+			orderInfo.paymentInfo(ShoppingCart.OrderPaymentInfo.newInstance(paymentInfo()));
+			if (null == paymentInfo.paymentAccountId()) {
+				orderInfo.billingAddress(paymentInfo.billingAddress());
+			}
+		}
+	}
+	orderInfo.shippingAddress(shippingAddress);
+	ShoppingCart.getInstance().loadTaxAmounts(orderInfo, new ShoppingCart.ResultHandler() {
+		@Override
+		public void onSuccess() {
+			// Handle success
+		}
+
+		@Override
+		public void onFailure(NCResponse response) {
+			// Handle error
+		}, getActivity());
+```
+
+> Result JSON
+
+```json
+{
+  "offersTaxData": [
+    {
+      "offerId": 2970592,
+      "gbId": 2296952,
+      "amount": 6.30,
+      "includedToPrice": false,
+      "taxEnabled": true,
+      "canPayTaxesWithCredits": true,
+      "canPayTaxesWithPromoCode": true,
+      "canPayTaxesWithGiftCards": true
+    }
+  ]
+}
+```
+
+*Request body JSON parameters:*
+
+Parameter | Type | Description
+--------- | --------- | -----------
+dealsOrder | array | array of deals in shopping cart
+discounts | object | map of used discounts for shopping cart (credits, gift cards and promo code)
+shippingAddress | object | shipping address, can be used only for passing saved address identifier (if you have one), this will retrieve shipping address from saved address in your account (requires authorization).
+billingAddress | object | address used for billing
+paymentInfo | object | should be used only for passing payment account identifier (requires authorization), this will retrieve billing address from saved payment account in your account
+taxAddress | object | address for tax calculations, should be used only when tax calculations are based on billing information and no billing needed for shopping cart (case when total value is fully covered with credits, purchase without payment)
+
+<aside class="warning">
+Load tax method does not send directly any credit card related information. Billing address should contain only address fields. You can only send payment account identifier in `paymentInfo` to get billing address from previously saved payment account.
+</aside>
+
+<aside class="notice">
+You should never call this method via `http` protocol, use `https` for all Shopping Cart API calls.
+</aside>
+
+**Triggering tax amounts loading:**
+
+When you load shopping cart details you got `taxSettings` object for every deal object. 
+If taxes enabled for specific deal than you should trigger tax amount calculation at a certain time and `taxSettings` object will help you find out in which one.
+In addition to all the other fields `taxSettings` contain `addressToUse` property which shows what changes will trigger tax amounts loading.
+
+<aside class="notice">
+It is recommended to do tax amount loading in async tasks on actions that affects total value (offers quantity change, shipping methods change, applying discounts etc) and on specific tax triggers described above.
+</aside>
+
+*`addressToUse` values:*
+
+Value | Description
+--------- | -----------
+ORIGIN_ADDRESS | tax amount calculation is based on shipping address
+CUSTOMERS_BILLING_ADDRESS | tax amount calculation is based on shipping address
+SUB_MERCHANT_LOCATION | tax amount calculation is based on submerchant location, this type of taxes will be triggered when user selects merchant location attribute (will have `isLocation` flag from API version 7), if no location attributes available for deal than you should load tax once for deal after shopping cart loaded. 
+PREDEFINED_STATE | tax amount calculation is based on predefined state, this value is predefined on backend, you should load tax once for deal after shopping cart loaded.
+
+**Handling results:**
+
+As a result of loading you'll get array with tax amounts objects which will help you calculate totals of your shopping cart and complete preparing for checkout.
+You should include received amounts to shopping cart calculations as additional amount of money to pay.
+
+*Tax amount object values:*
+
+Parameter | Type | Description
+--------- | --------- | -----------
+gbId | number | deal identifier
+offerId | number | offer identifier
+amount | number | value of taxes calculated for the deal
+includedToPrice | boolean | flag indicates that tax value is already included to offer price and should not be added to shopping cart total.
+canPayTaxesWithCredits | boolean | currently ignored, always true
+canPayTaxesWithGiftCards | boolean | currently ignored, always true
+canPayTaxesWithPromoCode | boolean | currently ignored, always true
 
 ## Checkout
 
+Shopping cart checkout is fully handled by ShoppingCart singletons. 
+You should fill `OrderInfo` bean with your shopping cart details and call checkout method of `ShoppingCart`.
+Shopping cart checkout is highly critical process, you should do all the possible validation checks before completing purchase.
+
+> Performs shopping cart checkout
+
+```shell
+curl \
+	-X POST \
+	-d '{"dealsOrder":[{"dealId":2296952,"cityId":25221,"offers":[{"offerId":2970592,"count":1,"shippingMethodId":29352}]}],"shippingAddress":{"address":"Main street 1","address2":"","firstName":"First","city":"Beverly Hills","phone":"555-555555","zip":"90210","countryCode":"US","state":"California","lastName":"Last"},"billingAddress":{"address":"Main street 1","address2":"","firstName":"First","city":"Beverly Hills","phone":"555-555555","zip":"90210","countryCode":"US","state":"California","lastName":"Last"},"guestEmail":"test@user.com","paymentInfo":{"cardType":"visa","secureCode":"123","firstName":"First","cardNumber":"4111111111111111","expirationMonth":2,"expirationYear":2017,"lastName":"Last"}}' \
+	-H "x-nimblecommerce-api-version: 7" \
+	-H "Authorization: {AUTHORIZATION_TOKEN}" \
+	-H "Accept: application/json; charset=UTF-8" \
+	-H "Content-Type: application/json; charset=UTF-8" \
+	https://stage.nimblebuy.com/api/shoppingCart/makeBuy?merchantId=78
+```
+
+```objective_c
+	NCShoppingCartOrderDiscounts *discounts = [[NCShoppingCartOrderDiscounts alloc] init];
+	discounts.promoCode = {PROMO_CODE};
+	discounts.giftCards = {GIFT_CARDS};
+	discounts.credits = {USED_CREDITS};
+	
+	NCShoppingCartOrderInfo *orderInfo = [[NCShoppingCartOrderInfo alloc] init];
+	orderInfo.discounts = discounts;
+	orderInfo.guestEmail = {GUEST_EMAIL};
+	orderInfo.birthDate = {BIRTH_DATE};
+	orderInfo.merchantOptIns = {MERCHANT_OPT_INS};
+	orderInfo.shippingAddress = {SHIPPING_ADDRESS};
+	
+	if (isCardless) {
+		if (paymentAccount) {
+			orderInfo.paymentInfo = [NCShoppingCartPaymentInfo paymentInfoFromPaymentAccount:paymentAccount];
+		} else if (billingInfo) {
+			orderInfo.paymentInfo = [NCShoppingCartPaymentInfo paymentInfoFromBillingInfo:billingInfo];
+		}
+		orderInfo.paymentInfo.cardCVV = secureCode;
+	} else {
+		if (hasBillingTaxes) {
+			orderInfo.taxAddress = taxAddress;
+		}
+	}
+	
+	[[NCShoppingCart cart] checkoutWithOrderInfo:orderInfo handler:^(NSError *error) {
+			if (error) {
+				// Handle error
+			} else {
+				// Handle success
+			}
+		}];
+```
+
+```java
+	ShoppingCart.OrderInfo orderInfo = new ShoppingCart.OrderInfo();
+	
+	orderInfo.discounts().promoCode({PROMO_CODE});
+	orderInfo.discounts().giftCards({GIFT_CARDS});
+	orderInfo.discounts().credits({USED_CREDITS});
+	
+	orderInfo.guestEmail({GEUEST_EMAIL});
+	orderInfo.dateOfBirth({BIRTH_DATE});
+	orderInfo.merchantOptIns({MERCHANT_OPT_INS});
+
+	if (isCardless) {
+		orderInfo.taxAddress(taxAddress);
+	} else {
+		if (null != paymentInfo) {
+			orderInfo.paymentInfo(ShoppingCart.OrderPaymentInfo.newInstance(paymentInfo));
+			if (null == paymentInfo.paymentAccountId()) {
+				orderInfo.billingAddress(paymentInfo.billingAddress());
+			}
+		} else if (null != billingInfo) {
+			if (null == billingInfo.id) {
+				orderInfo.billingAddress(billingInfo.billingAddress());
+			}
+			orderInfo.paymentInfo(OrderPaymentInfo.newInstance(billingInfo));
+			if (null != secureCode) {
+				orderInfo.paymentInfo().cardCVV(secureCode);
+			}
+		}
+	}
+	orderInfo.shippingAddress(shippingAddress);
+	ShoppingCart.getInstance().loadTaxAmounts(orderInfo, new ShoppingCart.ResultHandler() {
+		@Override
+		public void onSuccess() {
+			// Handle success
+		}
+
+		@Override
+		public void onFailure(NCResponse response) {
+			// Handle error
+		}, getActivity());
+```
+
+> Result JSON
+
+```json
+{
+	"id": 71856942
+}
+```
+
+*Request body JSON parameters:*
+
+Parameter | Type | Description
+--------- | --------- | -----------
+dealsOrder | array | array of deals in shopping cart
+discounts | object | map of used discounts for shopping cart (credits, gift cards and promo code)
+shippingAddress | object | shipping address, can be used only for passing saved address identifier (if you have one), this will retrieve shipping address from saved address in your account (requires authorization).
+billingAddress | object | address used for billing
+paymentInfo | object | payment account id or full credit card information, credit card CVV is required for checkout.
+taxAddress | object | address for tax calculations, should be used only when tax calculations are based on billing information and no billing needed for shopping cart (case when total value is fully covered with discounts, purchase without payment)
+guestEmail | string | email for guest checkout, can't use saved payment accounts or addresses, full credit card information is required if purchase is not cardless (fully covered with discounts).
+dateOfBirth | string | `en_US_POSIX` string with user birth date, optional field, should be filled if required.
+merchantOptIns | array | list of merchant opt ins
+
+<aside class="notice">
+You should never call this method via `http` protocol, use `https` for all Shopping Cart API calls.
+</aside>
+
+<aside class="warning">
+You should not store any payment related information on client side.
+</aside>
