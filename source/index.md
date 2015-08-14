@@ -2,9 +2,9 @@
 title: NimbleCommerce API Reference
 
 language_tabs:
-  - shell
-  - objective_c
-  - java
+  - shell: Shell
+  - objective_c: Objective-C
+  - java: Java
 
 toc_footers:
   - <a href='http://www.nimblecommerce.com'>Copyright © 2015 Nimblecommerce</a>
