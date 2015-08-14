@@ -12,6 +12,9 @@ toc_footers:
 
 includes:
   - errors
+  - api_changes
+  - ios_changes
+  - android_changes
 
 search: true
 ---

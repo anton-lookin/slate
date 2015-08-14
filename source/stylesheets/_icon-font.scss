@@ -24,6 +24,10 @@
   @extend %icon;
   content: "\e600";
 }
+%icon-note-sign {
+  @extend %icon;
+  content: "\e602";
+}
 %icon-info-sign {
   @extend %icon;
   content: "\e602";
