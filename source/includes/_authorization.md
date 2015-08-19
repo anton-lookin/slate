@@ -1,7 +1,6 @@
 # Authorization
 
-NimbleCommerce use custom authentication/authorization scheme which is similar to Basic HTTP Authentication. 
-The user must authorize your application so that you can get an access token.
+NimbleCommerce use custom authentication/authorization scheme which is similar to Basic HTTP Authentication. The process is simple enough, to authorize and authenticate user do a secure call over https on /api/authorization with credentials or facebook data. You get authorization token which should be passed with requests that requires user authorization/authentication. Authorization token should be placed in HTTP request with `Authorization` header name. Server application will extract and validate user identity from request automatically.
 
 
 **iOS**

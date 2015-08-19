@@ -1,8 +1,6 @@
-# Errors
+## Errors
 
-
-The NimbleCommerce API uses the following error codes:
-
+The NimbleCommerce API uses HTTP response codes to handle requests results for most of API calls. API uses the following HTTP response codes to indicate request execution result.
 
 Error Code | Meaning
 ---------- | -------
@@ -16,3 +14,8 @@ Error Code | Meaning
 500 | Internal Server Error -- We had a problem with our server. Try again later.
 502 | Bad Gateway -- The server was acting as a gateway or proxy and received an invalid response from the upstream server.
 503 | Service Unavailable -- We're temporarially offline for maintanance. Please try again later.
+
+<aside class="notice">
+However there are a number of outdated API methods that return result in `status` field of response json. Generally this methods will return status 200 to indicate success and 500 to indicate that error happened.
+</aside>
+
