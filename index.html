@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>NimbleCommerce API Reference</title>
+    <title>NimbleCommerce API / iOS SDK / Android SDK References</title>
 
     <link href="stylesheets/screen.css" rel="stylesheet" type="text/css" media="screen" />
     <link href="stylesheets/print.css" rel="stylesheet" type="text/css" media="print" />
@@ -29,8 +29,8 @@
       <img src="images/logo.png" />
         <div class="lang-selector">
               <a href="#" data-language-name="shell">Shell</a>
-              <a href="#" data-language-name="objective_c">Objective-C</a>
-              <a href="#" data-language-name="java">Java</a>
+              <a href="#" data-language-name="objective_c">iOS</a>
+              <a href="#" data-language-name="java">Android</a>
         </div>
         <div class="search">
           <input type="text" class="search" id="input-search" placeholder="Search">
@@ -48,13 +48,90 @@
       <div class="content">
         <h1 id="introduction">Introduction</h1>
 
-<p>Welcome to the NimbleCommerce API! You can use our API to access NimbleCommerce API endpoints.</p>
+<p>Welcome to the NimbleCommerce ecosystem! Here you can find references for API which will give you access to NimbleCommerce platform via programmatic interface.</p>
 
 <p>We have language bindings in Shell, Objective-C for iOS, and Java for Android! You can view code examples in the dark area to the right, and you can switch the programming language of the examples with the tabs in the top right.</p>
 
-<h1 id="authorization">Authorization</h1>
+<h1 id="nimblecommerce-api">NimbleCommerce API</h1>
 
-<p>NimbleCommerce SDK requires user authorization for a number of API calls. SDK has implemented authorization scheme which is ready to use in your applications.</p>
+          <h2 id="change-log">Change Log</h2>
+
+<p>Updated August 14, 2015</p>
+
+<h3 id="api-version-7">API version 7</h3>
+
+<ul>
+<li>Sales tax support for Shopping Cart</li>
+<li>Shipping support for online/offline coupons</li>
+<li>Order vouchers statuses support added</li>
+</ul>
+
+          <h2 id="description">Description</h2>
+
+<p>NimbleCommerce API provides a set of programmatic interfaces that give you access to manipulate with platform data.
+We work hard under our API and trying to implement modern approaches for it. NimbleCommerce API is mostly a RESTful API based on HTTP requests with JSON responses. 
+Current version of NimbleCommerce API is <em>7</em>. 
+Current version uses 1-step auth scheme to authorize and authenticate platform users, more information you can find under Authorization scheme of our documentation.</p>
+
+          <h2 id="errors">Errors</h2>
+
+<p>The NimbleCommerce API uses HTTP response codes to handle requests results for most of API calls. API uses the following HTTP response codes to indicate request execution result.</p>
+
+<table><thead>
+<tr>
+<th>Error Code</th>
+<th>Meaning</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>400</td>
+<td>Bad Request &ndash; The request could not be understood by the server due to malformed syntax.</td>
+</tr>
+<tr>
+<td>401</td>
+<td>Unauthorized &ndash; The request requires user authentication. The response MUST include a Authorization header field with valid authorization token.</td>
+</tr>
+<tr>
+<td>403</td>
+<td>Forbidden &ndash; The request was a legal request, but the server is refusing to respond to it. Error code for user not authorized to perform the operation or the resource is unavailable for some reason.</td>
+</tr>
+<tr>
+<td>404</td>
+<td>Not Found &ndash; The server has not found anything matching the Request-URI.</td>
+</tr>
+<tr>
+<td>405</td>
+<td>Method Not Allowed &ndash; The method specified in the Request-Line is not allowed for the resource identified by the Request-URI.</td>
+</tr>
+<tr>
+<td>406</td>
+<td>Not Acceptable &ndash; The resource identified by the request is only capable of generating response entities which have content characteristics not acceptable according to the accept headers sent in the request.</td>
+</tr>
+<tr>
+<td>410</td>
+<td>Gone &ndash; The requested resource is no longer available at the server and no forwarding address is known.</td>
+</tr>
+<tr>
+<td>500</td>
+<td>Internal Server Error &ndash; We had a problem with our server. Try again later.</td>
+</tr>
+<tr>
+<td>502</td>
+<td>Bad Gateway &ndash; The server was acting as a gateway or proxy and received an invalid response from the upstream server.</td>
+</tr>
+<tr>
+<td>503</td>
+<td>Service Unavailable &ndash; We&rsquo;re temporarially offline for maintanance. Please try again later.</td>
+</tr>
+</tbody></table>
+
+<aside class="notice">
+However there are a number of outdated API methods that return result in `status` field of response json. Generally this methods will return status 200 to indicate success and 500 to indicate that error happened.
+</aside>
+
+          <h1 id="authorization">Authorization</h1>
+
+<p>NimbleCommerce use custom authentication/authorization scheme which is similar to Basic HTTP Authentication. The process is simple enough, to authorize and authenticate user do a secure call over https on /api/authorization with credentials or facebook data. You get authorization token which should be passed with requests that requires user authorization/authentication. Authorization token should be placed in HTTP request with <code class="prettyprint">Authorization</code> header name. Server application will extract and validate user identity from request automatically.</p>
 
 <p><strong>iOS</strong></p>
 
@@ -138,7 +215,170 @@ Note, email is mandatory field, so you should setup permission on your facebook 
 <span class="n">Nmb</span><span class="o">.</span><span class="na">getAuthManager</span><span class="o">().</span><span class="na">authorize</span><span class="o">(</span><span class="n">facebookUserBean</span><span class="o">,</span> <span class="n">mFacebook</span><span class="o">.</span><span class="na">getSession</span><span class="o">().</span><span class="na">getAccessToken</span><span class="o">(),</span> <span class="n">birthDate</span><span class="o">);</span>
 </code></pre>
 
-<h1 id="shopping-cart">Shopping Cart</h1>
+          <h1 id="loading-deals">Loading Deals</h1>
+
+<p>You can load various deals list by calling <code class="prettyprint">/api/groupBuyMerchantList</code> with set of parameters. 
+This call does not require to have authenticated user to proceed. </p>
+
+<h3 id="parameters-description">Parameters description:</h3>
+
+<p>Parameters should be passed as GET request parametes in URL. <code class="prettyprint">merchantId</code>, <code class="prettyprint">localeId</code> and <code class="prettyprint">categoryId</code> are mandatory parameters and all other are optional.</p>
+
+<table><thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>merchantId</td>
+<td>number</td>
+<td>merchant identifier</td>
+</tr>
+<tr>
+<td>localeId</td>
+<td>number</td>
+<td>locale site identifier</td>
+</tr>
+<tr>
+<td>categoryId</td>
+<td>number</td>
+<td>category (city) identifier</td>
+</tr>
+<tr>
+<td>page</td>
+<td>number</td>
+<td>list page to load, will check for maxResults to calculate valid list offset</td>
+</tr>
+<tr>
+<td>maxResults</td>
+<td>number</td>
+<td>size of list page</td>
+</tr>
+<tr>
+<td>type</td>
+<td>string</td>
+<td>comma separated string with deal types</td>
+</tr>
+<tr>
+<td>filter</td>
+<td>string</td>
+<td>comma separated string with deal statuses or custom filter string</td>
+</tr>
+<tr>
+<td>sort</td>
+<td>string</td>
+<td>comma separated string with deal sort constants</td>
+</tr>
+<tr>
+<td>latitude</td>
+<td>number</td>
+<td>location latitude</td>
+</tr>
+<tr>
+<td>longitude</td>
+<td>number</td>
+<td>location longitude</td>
+</tr>
+<tr>
+<td>tags</td>
+<td>string</td>
+<td>comma separated tags (categories) identifiers</td>
+</tr>
+</tbody></table>
+
+<p>Deal types constants:
+Constant | Description
+&mdash;&mdash;&mdash; | &mdash;&mdash;&mdash;&ndash;
+d | paid deals
+c | contests
+s | store offers
+m | membership deals
+a | affiliate deals
+t | travel deals
+all | all deals</p>
+
+<p>Deal status constants:
+Constant | Description
+&mdash;&mdash;&mdash; | &mdash;&mdash;&mdash;&ndash;
+l | live deals
+c | closed deals
+t | tipped deals
+p | pending deals
+e | expired deals
+s | sold out deals
+lt | live and tipped deals
+lnt | live and not tipped deals
+ct | closed and tippded deals
+cnt | closed and not tipped deals</p>
+
+<p>Deal sorts constants:
+Suffix _asc or _desc should be added to sort parameters to proceed.
+Constant | Description
+&mdash;&mdash;&mdash; | &mdash;&mdash;&mdash;&ndash;
+sortField | sort by sort filed
+distance | sort by distance
+dealName | sort by deal name
+published | sort by publish date
+time | sort by expiration time
+numberDealSold | sort by sold products count
+stdCityName | sort by standart city name</p>
+
+<blockquote>
+<p>Loading deals list</p>
+</blockquote>
+<pre class="highlight objective_c"><code>    <span class="c1">// Create loader and keep strong reference on it
+</span>    <span class="n">self</span><span class="p">.</span><span class="n">loader</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NCDealsList</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+    <span class="c1">// Assign loader delegate to handle loading result
+</span>    <span class="n">self</span><span class="p">.</span><span class="n">loader</span><span class="p">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="n">self</span><span class="p">;</span>
+    <span class="c1">// Aggregate pararameters in special bean
+</span>    <span class="n">NCDealListParameters</span> <span class="o">*</span><span class="n">params</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NCDealListParameters</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+    <span class="n">params</span><span class="p">.</span><span class="n">categoryId</span> <span class="o">=</span> <span class="mi">@25221</span><span class="p">;</span>
+    <span class="n">params</span><span class="p">.</span><span class="n">page</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">params</span><span class="p">.</span><span class="n">limit</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+    <span class="n">params</span><span class="p">.</span><span class="n">types</span> <span class="o">=</span> <span class="s">@"d,c,a"</span><span class="p">;</span> <span class="c1">// paid deals, contests and affiliates
+</span>    <span class="n">params</span><span class="p">.</span><span class="n">filters</span> <span class="o">=</span> <span class="s">@"l,e"</span><span class="p">;</span> <span class="c1">// load live and expired deals
+</span>    <span class="p">[</span><span class="n">params</span><span class="p">.</span><span class="n">sorts</span> <span class="nf">addSort</span><span class="p">:</span><span class="s">@"published_desc"</span><span class="p">]</span> <span class="c1">// add sorting parameter 
+</span>    <span class="n">params</span><span class="p">.</span><span class="n">tags</span> <span class="o">=</span> <span class="p">@[];</span> <span class="c1">// array of tags to filter with
+</span>    <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">loader</span> <span class="nf">getDeals</span><span class="p">:</span><span class="n">params</span><span class="p">];</span>
+
+    <span class="c1">// Handle loading success in delegated method
+</span>    <span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="nf">dealsListingSucceed</span><span class="p">:(</span><span class="n">NCDealsList</span> <span class="o">*</span><span class="p">)</span><span class="nv">dataSource</span> <span class="p">{</span>
+    <span class="p">}</span>
+    <span class="c1">// Handle loading failure in delegated method
+</span>    <span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="nf">dealsListingFailed</span><span class="p">:(</span><span class="n">NCDealsList</span> <span class="o">*</span><span class="p">)</span><span class="nv">dataSource</span> <span class="nf">withError</span><span class="p">:(</span><span class="n">NSError</span> <span class="o">*</span><span class="p">)</span><span class="nv">error</span> <span class="p">{</span>
+    <span class="p">}</span>
+</code></pre>
+<pre class="highlight java"><code>    <span class="c1">// Create parameter builder for deals loader</span>
+    <span class="n">Params</span><span class="o">.</span><span class="na">Builder</span> <span class="n">builder</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Params</span><span class="o">.</span><span class="na">Builder</span><span class="o">().</span><span class="na">fromArgs</span><span class="o">(</span><span class="n">getArguments</span><span class="o">());</span>
+    <span class="n">builder</span><span class="o">.</span><span class="na">page</span><span class="o">(</span><span class="n">mCurrentPage</span><span class="o">).</span><span class="na">size</span><span class="o">(</span><span class="mi">10</span><span class="o">).</span><span class="na">add</span><span class="o">(</span><span class="n">Constants</span><span class="o">.</span><span class="na">Sort</span><span class="o">.</span><span class="na">SORT_FIELD_DESC</span><span class="o">).</span><span class="na">add</span><span class="o">(</span><span class="n">Constants</span><span class="o">.</span><span class="na">Status</span><span class="o">.</span><span class="na">LIVE</span><span class="o">).</span><span class="na">add</span><span class="o">(</span><span class="n">Constants</span><span class="o">.</span><span class="na">Type</span><span class="o">.</span><span class="na">deals</span><span class="o">());</span>
+
+    <span class="kd">final</span> <span class="n">Deals</span> <span class="n">loader</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Deals</span><span class="o">(</span><span class="n">getActivity</span><span class="o">());</span>
+    <span class="c1">// Save reference on a loader</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">loader</span> <span class="o">=</span> <span class="n">loader</span><span class="o">;</span>
+    <span class="n">loader</span><span class="o">.</span><span class="na">with</span><span class="o">(</span><span class="n">builder</span><span class="o">.</span><span class="na">build</span><span class="o">())</span>
+            <span class="o">.</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">Deals</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+                <span class="nd">@Override</span>
+                <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">GroupBuyList</span> <span class="n">dealsList</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="c1">// Handle loading success</span>
+                <span class="o">}</span>
+
+                <span class="nd">@Override</span>
+                <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">String</span> <span class="n">errorMessage</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="c1">// Handle loading failure</span>
+                <span class="o">}</span>
+            <span class="o">}).</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+<pre class="highlight shell"><code>curl <span class="se">\</span>
+    -X GET <span class="se">\</span>
+    -H <span class="s2">"x-nimblecommerce-api-version: 7"</span> <span class="se">\</span>
+    -H <span class="s2">"Accept: application/json; charset=UTF-8"</span> <span class="se">\</span>
+    -H <span class="s2">"Content-Type: application/json; charset=UTF-8"</span> <span class="se">\</span>
+    <span class="s2">"http://stage.nimblebuy.com/api/groupBuyMerchantList?merchantId=78&amp;localeId=281&amp;categoryId=25221&amp;page=0&amp;maxResults=10&amp;type=d%2Cc%2Cs%2Ca&amp;sort=sortField_desc"</span>
+</code></pre>
+
+          <h1 id="shopping-cart">Shopping Cart</h1>
 
 <p>Shopping Cart API methods use hybrid parameters scheme, shopping cart related parameters are passed in request body as JSON.
 NimbleCommerce parameters such as <code class="prettyprint">merchantId</code>, <code class="prettyprint">localeId</code>, <code class="prettyprint">securityKey</code> are passed in URL.
@@ -1112,116 +1352,1273 @@ You should never call this method via `http` protocol, use `https` for all Shopp
 You should not store any payment related information on client side.
 </aside>
 
-          <h1 id="errors">Errors</h1>
+          <h1 id="purchases">Purchases</h1>
 
-<p>The NimbleCommerce API uses the following error codes:</p>
+<p>You can load your purchases list by calling <code class="prettyprint">/api/userDealList.action</code>. 
+This call allows you to receive user purchase list with filters for authorized user.</p>
+
+<aside class="notice">
+This method has basic pagination functionality, but it does not allow to select page size and it is hardcoded on a backend to return pages with maximum 5 items in list.
+</aside>
+
+<p>Parameters for purchases loading API call:</p>
 
 <table><thead>
 <tr>
-<th>Error Code</th>
-<th>Meaning</th>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
 </tr>
 </thead><tbody>
 <tr>
-<td>400</td>
-<td>Bad Request &ndash; The request could not be understood by the server due to malformed syntax.</td>
+<td>page</td>
+<td>number</td>
+<td>list page to load</td>
 </tr>
 <tr>
-<td>401</td>
-<td>Unauthorized &ndash; The request requires user authentication. The response MUST include a Authorization header field with valid authorization token.</td>
-</tr>
-<tr>
-<td>403</td>
-<td>Forbidden &ndash; The request was a legal request, but the server is refusing to respond to it. Error code for user not authorized to perform the operation or the resource is unavailable for some reason.</td>
-</tr>
-<tr>
-<td>404</td>
-<td>Not Found &ndash; The server has not found anything matching the Request-URI.</td>
-</tr>
-<tr>
-<td>405</td>
-<td>Method Not Allowed &ndash; The method specified in the Request-Line is not allowed for the resource identified by the Request-URI.</td>
-</tr>
-<tr>
-<td>406</td>
-<td>Not Acceptable &ndash; The resource identified by the request is only capable of generating response entities which have content characteristics not acceptable according to the accept headers sent in the request.</td>
-</tr>
-<tr>
-<td>410</td>
-<td>Gone &ndash; The requested resource is no longer available at the server and no forwarding address is known.</td>
-</tr>
-<tr>
-<td>500</td>
-<td>Internal Server Error &ndash; We had a problem with our server. Try again later.</td>
-</tr>
-<tr>
-<td>502</td>
-<td>Bad Gateway &ndash; The server was acting as a gateway or proxy and received an invalid response from the upstream server.</td>
-</tr>
-<tr>
-<td>503</td>
-<td>Service Unavailable &ndash; We&rsquo;re temporarially offline for maintanance. Please try again later.</td>
+<td>filter</td>
+<td>string</td>
+<td>filtering parameter</td>
 </tr>
 </tbody></table>
 
-          <h1 id="api-changes">API changes</h1>
+<p>Filter parameter constants:</p>
 
-<p>Updated August 14, 2015</p>
+<table><thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>available</td>
+<td>available purchases</td>
+</tr>
+<tr>
+<td>expired</td>
+<td>expired purchases</td>
+</tr>
+<tr>
+<td>used</td>
+<td>used purchases</td>
+</tr>
+<tr>
+<td>received</td>
+<td>received gifts</td>
+</tr>
+<tr>
+<td>sent</td>
+<td>sent gifts</td>
+</tr>
+<tr>
+<td>membershipAvailable</td>
+<td>available rewards</td>
+</tr>
+<tr>
+<td>membershipUsed</td>
+<td>used rewards</td>
+</tr>
+</tbody></table>
 
-<h2 id="api-version-7">API version 7</h2>
+<blockquote>
+<p>Load purchases list</p>
+</blockquote>
+<pre class="highlight objective_c"><code>    <span class="n">self</span><span class="p">.</span><span class="n">loader</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NCUserDealsList</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+    <span class="n">self</span><span class="p">.</span><span class="n">loader</span><span class="p">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="n">self</span><span class="p">;</span>
 
-<ul>
-<li>1</li>
-<li>2</li>
-<li>3</li>
-</ul>
+    <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">loader</span> <span class="nf">getDealsWithFilter</span><span class="p">:</span><span class="n">NCUserDealListFilterAvailable</span> <span class="nf">page</span><span class="p">:</span><span class="mi">0</span><span class="p">];</span>
 
-<h2 id="api-version-6">API version 6</h2>
+    <span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="nf">userDealsListingSucceed</span><span class="p">:(</span><span class="n">NCUserDealsList</span> <span class="o">*</span><span class="p">)</span><span class="nv">loader</span> <span class="p">{</span>
+        <span class="c1">// Handle loader.deals
+</span>    <span class="p">}</span>
+    <span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="nf">userDealsListingFailed</span><span class="p">:(</span><span class="n">NCUserDealsList</span> <span class="o">*</span><span class="p">)</span><span class="nv">dataSource</span> <span class="nf">withError</span><span class="p">:(</span><span class="n">NSError</span> <span class="o">*</span><span class="p">)</span><span class="nv">error</span> <span class="p">{</span>
+        <span class="c1">// Handle request error
+</span>    <span class="p">}</span>
+</code></pre>
+<pre class="highlight java"><code>    <span class="c1">// AsyncTask class example for purchases list loading</span>
+    <span class="kd">private</span> <span class="kd">class</span> <span class="nc">DealsLoader</span> <span class="kd">extends</span> <span class="n">AsyncTask</span><span class="o">&lt;</span><span class="n">Void</span><span class="o">,</span> <span class="n">Void</span><span class="o">,</span> <span class="n">Void</span><span class="o">&gt;</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">protected</span> <span class="kt">void</span> <span class="n">onPreExecute</span><span class="o">()</span> <span class="o">{</span>
+        <span class="o">}</span>
 
-<ul>
-<li>1</li>
-<li>2</li>
-<li>3</li>
-</ul>
+        <span class="nd">@Override</span>
+        <span class="kd">protected</span> <span class="n">Void</span> <span class="n">doInBackground</span><span class="o">(</span><span class="n">Void</span><span class="o">...</span> <span class="n">params</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">GroupBuyList</span> <span class="n">offersList</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="n">offersList</span> <span class="o">=</span> <span class="n">Nmb</span><span class="o">.</span><span class="na">getDealsManager</span><span class="o">().</span><span class="na">getMyCouponsList</span><span class="o">(</span><span class="n">mCurrentPage</span><span class="o">,</span> <span class="n">filter</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ServerIsDownException</span> <span class="o">|</span> <span class="n">ConnectionException</span> <span class="o">|</span> <span class="n">ConnectionTimeoutException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+                <span class="c1">// Handle request exception</span>
+            <span class="o">}</span>
 
-          <h1 id="ios-sdk-changes">iOS SDK changes</h1>
+            <span class="k">if</span> <span class="o">(</span><span class="kc">null</span> <span class="o">!=</span> <span class="n">offersList</span> <span class="o">&amp;&amp;</span> <span class="n">offersList</span><span class="o">.</span><span class="na">totalCount</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// Save received purchase list for further processing</span>
+            <span class="o">}</span>
+            <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="nd">@Override</span>
+        <span class="kd">protected</span> <span class="kt">void</span> <span class="n">onPostExecute</span><span class="o">(</span><span class="n">Void</span> <span class="n">aVoid</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="kc">null</span> <span class="o">==</span> <span class="n">getView</span><span class="o">())</span> <span class="o">{</span>
+                <span class="k">return</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="c1">// Handle results</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</code></pre>
+<pre class="highlight shell"><code>    curl <span class="se">\</span>
+    -X GET <span class="se">\</span>
+    -H <span class="s2">"x-nimblecommerce-api-version: 7"</span> <span class="se">\</span>
+    -H <span class="s2">"Accept: application/json; charset=UTF-8"</span> <span class="se">\</span>
+    -H <span class="s2">"Content-Type: application/json; charset=UTF-8"</span> <span class="se">\</span>
+    -H <span class="s2">"Authorization: MTQ0MDA1NDcwNjU4Nzo6OjEwMjk4NTgzMjo6OnJCTzhWN2hxb0p5ZEFjQldUMDR2VWc9PTo6OlNVQlNDUklCRVJfSUQ="</span> <span class="se">\</span>
+    <span class="s2">"http://stage.nimblebuy.com/api/userDealList.action?merchantId=78&amp;page=0&amp;filter=available"</span>
+</code></pre>
+
+          <h1 id="order-status">Order Status</h1>
+
+<p>From NimbleCommerce API version 6 you have access to order status loading methods. 
+This methods include loading order details, view and redeem order vouchers.
+You can check order status without registering user account, you need only email and order number to proceed.
+First thing you need to do is perform partial authorization and get temporary authorization key, which is required to access order status API methods.</p>
+
+<blockquote>
+<p>Authorize for orders resource</p>
+</blockquote>
+<pre class="highlight objective_c"><code>    <span class="n">self</span><span class="p">.</span><span class="n">authorizator</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NCAuthorization</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">]</span>
+    <span class="n">self</span><span class="p">.</span><span class="n">authorizator</span><span class="p">.</span><span class="n">onSuccess</span> <span class="o">=</span> <span class="o">^</span><span class="p">(</span><span class="n">NCLoader</span> <span class="o">*</span><span class="n">loader</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// auth token returned in loader.authorizationKey
+</span>    <span class="p">};</span>
+    <span class="n">self</span><span class="p">.</span><span class="n">authorizator</span><span class="p">.</span><span class="n">onFailure</span> <span class="o">=</span> <span class="o">^</span><span class="p">(</span><span class="n">NCLoader</span> <span class="o">*</span><span class="n">loader</span><span class="p">,</span> <span class="n">NSError</span> <span class="o">*</span><span class="n">error</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// handle error
+</span>    <span class="p">};</span>
+    <span class="c1">// Authorizes for orders resource for given email.
+</span>    <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">authorizator</span> <span class="nf">authorizeForResource</span><span class="p">:</span><span class="s">@"orders"</span> <span class="nf">withEmail</span><span class="p">:</span><span class="s">@"user@email.com"</span><span class="p">];</span>
+</code></pre>
+<pre class="highlight java"><code>    <span class="k">new</span> <span class="nf">AuthorizeResource</span><span class="p">(</span><span class="k">this</span><span class="o">).</span><span class="na">resource</span><span class="o">(</span><span class="s">"orders"</span><span class="o">).</span><span class="na">email</span><span class="o">(</span><span class="s">"user@email.com"</span><span class="o">).</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">AuthorizeResource</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="kd">final</span> <span class="n">String</span> <span class="n">authKey</span><span class="o">,</span> <span class="kd">final</span> <span class="n">Boolean</span> <span class="n">hasAccount</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// handle success</span>
+        <span class="o">}</span>
+
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">String</span> <span class="n">message</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// handle error</span>
+        <span class="o">}</span>
+    <span class="o">}).</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+<pre class="highlight shell"><code>curl <span class="se">\</span>
+    -X POST <span class="se">\</span>
+    -d <span class="s2">"email=user@email.com&amp;resource=orders"</span> <span class="se">\</span>
+    -H <span class="s2">"x-nimblecommerce-api-version: 7"</span> <span class="se">\</span>
+    -H <span class="s2">"Accept: application/json; charset=UTF-8"</span> <span class="se">\</span>
+    https://stage.nimblebuy.com/api/authorize?merchantId<span class="o">=</span>78
+</code></pre>
+
+<blockquote>
+<p>Load order details</p>
+</blockquote>
+<pre class="highlight objective_c"><code>    <span class="n">self</span><span class="p">.</span><span class="n">loader</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NCOrderGet</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+    <span class="n">self</span><span class="p">.</span><span class="n">loader</span><span class="p">.</span><span class="n">authorizationKey</span> <span class="o">=</span> <span class="n">authorizationKey</span><span class="p">;</span>
+    <span class="n">self</span><span class="p">.</span><span class="n">loader</span><span class="p">.</span><span class="n">onSuccess</span> <span class="o">=</span> <span class="o">^</span><span class="p">(</span><span class="n">NCLoader</span> <span class="o">*</span><span class="n">loader</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// handle loader.order
+</span>    <span class="p">};</span>
+    <span class="n">self</span><span class="p">.</span><span class="n">orderLoader</span><span class="p">.</span><span class="n">onFailure</span> <span class="o">=</span> <span class="o">^</span><span class="p">(</span><span class="n">NCLoader</span> <span class="o">*</span><span class="n">loader</span><span class="p">,</span> <span class="n">NSError</span> <span class="o">*</span><span class="n">error</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// handle request handler
+</span>    <span class="p">};</span>
+    <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">loader</span> <span class="nf">getPaidOrder</span><span class="p">:</span><span class="n">orderNumber</span><span class="p">];</span> 
+</code></pre>
+<pre class="highlight java"><code>    <span class="k">new</span> <span class="nf">LoadOrder</span><span class="p">(</span><span class="n">getActivity</span><span class="o">()).</span><span class="na">orderId</span><span class="o">(</span><span class="n">orderNumber</span><span class="o">).</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">LoadOrder</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">Order</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// handle request success</span>
+        <span class="o">}</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">String</span> <span class="n">message</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// handle request error</span>
+        <span class="o">}</span>
+    <span class="o">}).</span><span class="na">authorizationKey</span><span class="o">(</span><span class="n">authorizationKey</span><span class="o">).</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+<pre class="highlight shell"><code>curl <span class="se">\</span>
+    -X GET <span class="se">\</span>
+    -H <span class="s2">"x-nimblecommerce-api-version: 7"</span> <span class="se">\</span>
+    -H <span class="s2">"Accept: application/json; charset=UTF-8"</span> <span class="se">\</span>
+    -H <span class="s2">"Authorization: MTQ0MDA1NDcwNjU4Nzo6OjEwMjk4NTgzMjo6OnJCTzhWN2hxb0p5ZEFjQldUMDR2VWc9PTo6OlNVQlNDUklCRVJfSUQ="</span> <span class="se">\</span>
+    https://stage.nimblebuy.com/api/orders/paid/1234?merchantId<span class="o">=</span>78
+</code></pre>
+
+<blockquote>
+<p>Load order items (for product deals only)</p>
+</blockquote>
+<pre class="highlight objective_c"><code>    <span class="n">self</span><span class="p">.</span><span class="n">itemsLoader</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NCOrderItemsGet</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+    <span class="n">self</span><span class="p">.</span><span class="n">itemsLoader</span><span class="p">.</span><span class="n">authorizationKey</span> <span class="o">=</span> <span class="n">authorizationKey</span><span class="p">;</span>
+    <span class="n">self</span><span class="p">.</span><span class="n">itemsLoader</span><span class="p">.</span><span class="n">onSuccess</span> <span class="o">=</span> <span class="o">^</span><span class="p">(</span><span class="n">NCLoader</span> <span class="o">*</span><span class="n">loader</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Handle loader.items array
+</span>    <span class="p">};</span>
+    <span class="n">self</span><span class="p">.</span><span class="n">itemsLoader</span><span class="p">.</span><span class="n">onFailure</span> <span class="o">=</span> <span class="o">^</span><span class="p">(</span><span class="n">NCLoader</span> <span class="o">*</span><span class="n">loader</span><span class="p">,</span> <span class="n">NSError</span> <span class="o">*</span><span class="n">error</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Handle request error
+</span>    <span class="p">};</span>
+    <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">itemsLoader</span> <span class="nf">getPaidOrderItems</span><span class="p">:</span><span class="n">orderNumber</span><span class="p">];</span>
+</code></pre>
+<pre class="highlight java"><code>    <span class="k">new</span> <span class="n">LoadOrderItems</span><span class="o">.</span><span class="na">Paid</span><span class="o">(</span><span class="n">getActivity</span><span class="o">()).</span><span class="na">orderId</span><span class="o">(</span><span class="n">orderNumber</span><span class="o">).</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">LoadOrderItems</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">OrderItem</span><span class="o">&gt;</span> <span class="n">orderItems</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// Handle request success</span>
+        <span class="o">}</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">String</span> <span class="n">message</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// Handle request error</span>
+        <span class="o">}</span>
+    <span class="o">}).</span><span class="na">authorizationKey</span><span class="o">(</span><span class="n">authorizationKey</span><span class="o">).</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+<pre class="highlight shell"><code>curl <span class="se">\</span>
+    -X GET <span class="se">\</span>
+    -H <span class="s2">"x-nimblecommerce-api-version: 7"</span> <span class="se">\</span>
+    -H <span class="s2">"Accept: application/json; charset=UTF-8"</span> <span class="se">\</span>
+    -H <span class="s2">"Authorization: MTQ0MDA1NDcwNjU4Nzo6OjEwMjk4NTgzMjo6OnJCTzhWN2hxb0p5ZEFjQldUMDR2VWc9PTo6OlNVQlNDUklCRVJfSUQ="</span> <span class="se">\</span>
+    https://stage.nimblebuy.com/api/orders/paid/1234/items?merchantId<span class="o">=</span>78
+</code></pre>
+
+<blockquote>
+<p>Load order vouchers (for non product deals only)</p>
+</blockquote>
+<pre class="highlight objective_c"><code>    <span class="n">self</span><span class="p">.</span><span class="n">vouchersLoader</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NCOrderVouchersGet</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+    <span class="n">self</span><span class="p">.</span><span class="n">vouchersLoader</span><span class="p">.</span><span class="n">authorizationKey</span> <span class="o">=</span> <span class="n">authorizationKey</span><span class="p">;</span>
+    <span class="n">self</span><span class="p">.</span><span class="n">vouchersLoader</span><span class="p">.</span><span class="n">onSuccess</span> <span class="o">=</span> <span class="o">^</span><span class="p">(</span><span class="n">NCLoader</span> <span class="o">*</span><span class="n">loader</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Handle loader.vouchers array
+</span>    <span class="p">};</span>
+    <span class="n">self</span><span class="p">.</span><span class="n">vouchersLoader</span><span class="p">.</span><span class="n">onFailure</span> <span class="o">=</span> <span class="o">^</span><span class="p">(</span><span class="n">NCLoader</span> <span class="o">*</span><span class="n">loader</span><span class="p">,</span> <span class="n">NSError</span> <span class="o">*</span><span class="n">error</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Handle request error
+</span>    <span class="p">};</span>
+    <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">vouchersLoader</span> <span class="nf">getPaidOrderVouchers</span><span class="p">:</span><span class="n">orderNumber</span><span class="p">];</span>
+</code></pre>
+<pre class="highlight java"><code>    <span class="k">new</span> <span class="n">LoadOrderVouchers</span><span class="o">.</span><span class="na">Paid</span><span class="o">(</span><span class="n">getActivity</span><span class="o">()).</span><span class="na">orderId</span><span class="o">(</span><span class="n">orderNumber</span><span class="o">).</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">LoadOrderVouchers</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">OrderVoucher</span><span class="o">&gt;</span> <span class="n">orderVouchers</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// Handle request success</span>
+        <span class="o">}</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">String</span> <span class="n">message</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// Handler request error</span>
+        <span class="o">}</span>
+    <span class="o">}).</span><span class="na">authorizationKey</span><span class="o">(</span><span class="n">authorizationKey</span><span class="o">).</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+<pre class="highlight shell"><code>curl <span class="se">\</span>
+    -X GET <span class="se">\</span>
+    -H <span class="s2">"x-nimblecommerce-api-version: 7"</span> <span class="se">\</span>
+    -H <span class="s2">"Accept: application/json; charset=UTF-8"</span> <span class="se">\</span>
+    -H <span class="s2">"Authorization: MTQ0MDA1NDcwNjU4Nzo6OjEwMjk4NTgzMjo6OnJCTzhWN2hxb0p5ZEFjQldUMDR2VWc9PTo6OlNVQlNDUklCRVJfSUQ="</span> <span class="se">\</span>
+    https://stage.nimblebuy.com/api/orders/paid/1234/vouchers?merchantId<span class="o">=</span>78
+</code></pre>
+
+          <h1 id="ios-sdk">iOS SDK</h1>
+
+<p>Welcome to NimbleCommerce iOS SDK. Our SDK is a wrapper around NimbleCommerce API which provides native interfaces to communicate with NimbleCommerce platform.
+This section has general information and recommendation about SDK usage. Out classes are self-documented, you should study class interface and inline documentation before using any SDK class.</p>
+
+          <h2 id="change-log">Change Log</h2>
 
 <p>NimbleCommerce iOS SDK changes</p>
 
-<p>SDK version 1.5.30</p>
+<h3 id="1-5-30">1.5.30</h3>
 
-<p>Shopping Cart API
-- Sales tax support, additional documentation can be found in Shopping Cart -&gt; Taxes section 
-- Shipping support for offline coupons</p>
+<ul>
+<li>API version 7 introduced</li>
+<li>Sales tax support, additional documentation can be found in Shopping Cart -&gt; Taxes section </li>
+<li>Shipping support for offline coupons</li>
+<li>Franchise offers support</li>
+<li>Multi offer merchant deals support</li>
+<li>Merchant opt-ins support</li>
+<li>Direct usage of *.nimblecommerce.com endpoints for API access is restricted, *.nimblebuy.com or another FE endpoint should be used instead. SDK will automatically substitute *.nimblecommerce.com with *.nimblebuy.com.</li>
+</ul>
 
-<p>SDK version 1.5.20</p>
+          <h2 id="get-started">Get Started</h2>
 
-<p>General
-- Direct usage of *.nimblecommerce.com endpoints for API access is restricted, *.nimblebuy.com or another FE endpoint should be used instead. SDK will automatically substitute *.nimblecommerce.com with *.nimblebuy.com.</p>
+<ol>
+<li><p>The NimbleCommerce SDK for iOS is designed to be easy to install and use. This guide walks you through the basics of setting up the development and project environment and creating a simple application.</p></li>
+<li><p>Install prerequisites. OS X and Xcode is required for iOS development. Xcode is available through the App Store.
+Download NimbleCommerce iOS SDK. NimbleCommerce iOS SDK is distributed as framework and available to download in MobileApps section at your merchant portal. Keep an eye on updates, replace framework included to your projects, when new version become available.</p></li>
+<li><p>Create and configure an Xcode project. Create a new Xcode project, add NimbleCommerce iOS SDK by dragging nc-ios-sdk.framework into the Frameworks section of your Project navigator. Framework is distributed in debug and release versions, debug version doesn’t strip debug messages logging code, to let developer see debug information.
+The SDK relies on four other frameworks/libraries (CFNetwork, MobileCoreServices, SystemConfiguration and libz). To add these, go to the <code class="prettyprint">Link Binary with Libraries</code> of the target’s Build phases pane, and click the <code class="prettyprint">plus</code> button to add them.</p></li>
+<li><p>Configure NimbleCommerce application. Basic configuration is made using NCSettings.plist file, which should be created in main bundle of your application. It is recommended to use NCSettings.plist from NimbleCommerce Demo Application as example.</p></li>
+</ol>
 
-          <h1 id="android-sdk-changes">Android SDK changes</h1>
+<p>NCSettings.plist required fields:</p>
 
-<p>Updated 14 August, 2015</p>
+<table><thead>
+<tr>
+<th>Key</th>
+<th>Value</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>version</td>
+<td>settings file version, number value displaying version of configuration file. You should increment this value every time you made changes to apply them on next application run.</td>
+</tr>
+<tr>
+<td>merchantId</td>
+<td>NimbleCommerce merchant identifier. Unique merchant identifier used in by NimbleCommerce API calls.</td>
+</tr>
+<tr>
+<td>identifier</td>
+<td>NimbleCommerce mobile application identifier.</td>
+</tr>
+<tr>
+<td>secretKey</td>
+<td>NimbleCommerce mobile application secret key. String value used by all NimbleCommerce API calls to validate application permission to use NimbleCommerce API.</td>
+</tr>
+<tr>
+<td>apiUrl</td>
+<td>NimbleCommerce API root url. Root url used to perform API calls.</td>
+</tr>
+<tr>
+<td>apiSecureUrl</td>
+<td>NimbleCommerce API root secure url. Root url used to perform secure API calls (Usually the same as url as apiUrl but with https protocol).</td>
+</tr>
+<tr>
+<td>countryCode</td>
+<td>application country code (ISO 3166-1 alpha-2 code). Used to perform country specific fields validation (zip code, state, etc).</td>
+</tr>
+<tr>
+<td>cardTypes</td>
+<td>array of supported by application credit card types. Array should contain at least one card type.</td>
+</tr>
+</tbody></table>
 
-<p>NimbleCommerce Android SDK changes</p>
+<p><code class="prettyprint">NCSettingsManager</code> is singleton that manages application settings. It is main application manager and it should be configured before performing any API calls. To perform configuration you should send configure message to sharedInstance of NCSettingsManager.</p>
 
-<p>SDK version 5.4</p>
+<p>Settings manager will dispatch couple of notifications about its configuration process status changes. Basically, you should add observers for NCSettingsManagerConfigureFinishNotification and NCSettingsManagerConfigureFailNotification, where you should handle successful or failed configuration.</p>
 
-<p>Shopping Cart API
-- Sales tax support, additional documentation can be found in <em>Shopping Cart -&gt; Taxes</em> section
-- Shipping support for offline coupons</p>
+<p><code class="prettyprint">NCMerchantManager</code> is singleton that manages merchant specific settings and data, currently it is list of categories and tags. To perform configuration you should complete settings manager configuration and send configure message to sharedInstance of NCMerchantManager. </p>
 
-<p>SDK version 5.3</p>
+<p>Merchant manager will dispatch couple of notifications about its configuration process status changes. You should add observers for NCMerchantManagerConfigureFinishNotification and NCMerchantManagerConfigureFailNotification, where you should handle successful or failed configuration. Merchant manager usage is optional, NimbleCommerce SDK classes does not use merchant manager directly, it is used by demo application to provide common access to merchant specific data. You can implement your own scheme for handling merchant tags and categories and related data.</p>
 
-<p>General
-- Direct usage of *.nimblecommerce.com endpoints for API access is restricted, *.nimblebuy.com or another FE endpoint should be used instead. SDK will automatically substitute *.nimblecommerce.com with *.nimblebuy.com.</p>
+          <h2 id="sdk-reference">SDK Reference</h2>
+
+<p>NimbleCommerce iOS SDK classes are divided to three groups:
+* manager classes - singleton classes that provides global access to shared actions and data. SDK contains settings, merchant and authorization managers. Authorization manager is used to perform authorization functions.
+* helper classes - container and bean classes that used to perform API requests, present and store received from responses data.
+* request classes - wrapper classes that used to perform specific NimbleCommerce API calls.
+* beans classes - container objects to keep your data incapsulated</p>
+
+<h3 id="nimblecommerce-ios-sdk-request-classes-description">NimbleCommerce iOS SDK Request Classes Description</h3>
+
+<p>Every request class is used to perform specific NimbleCommerce API call (get deal, save payment account, etc.). Every request class is wrapper around loader class which performs network communication and parses server response. Request classes use block-based and delegation pattern to notify about successful or failed call status. In case of successful response, received data is stored in object fields and can be accessed using object properties. Any detailed description about available actions and structure of NimbleCommerce iOS SDK classes can be found in your merchant portal in Mobile Apps section. Documentation is distributed in .docset format that allows you to import it in Xcode Documentation system.</p>
+
+<h3 id="recommendations">Recommendations</h3>
+
+<p>Loader classes usage remains similar if you use ARC or doesn’t. Strong reference on loader object should be saved in field or property to keep loader live while loading routines are in progress. Loader can be created on initialization or can be instantiated lazily on first access to property. Examples for loaders initialization and usage for arc and manual memory management. Note that result blocks of loaders will be released and reset to nil as soon as loader completes, you should set result blocks before every loader execution.</p>
+
+<p>Every loader extends NCLoader class that provides common interface for NimbleCommerce API calls. Every NCLoader has configuration fields described below, that will be set up automatically from managers or can be set up manually to configure loader with specific data.</p>
+
+<p>NCLoader configuration fields:</p>
+
+<table><thead>
+<tr>
+<th>Class</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>userAgent</td>
+<td>application user agent, used to identify application on backend.</td>
+</tr>
+<tr>
+<td>apiVersion</td>
+<td>NimbleCommerce API version.</td>
+</tr>
+<tr>
+<td>merchantId</td>
+<td>merchant identifier.</td>
+</tr>
+<tr>
+<td>secretKey</td>
+<td>application secret key.</td>
+</tr>
+<tr>
+<td>localeId</td>
+<td>locale identifier.</td>
+</tr>
+<tr>
+<td>authorizationKey</td>
+<td>authorization key, used only for API calls that require user authorization.</td>
+</tr>
+</tbody></table>
+
+<h3 id="framework-contains-list-of-loaders-for-public-api-methods-that-can-be-devided-on-categories">Framework contains list of loaders for public API methods that can be devided on categories:</h3>
+
+<p>Account related request classes:</p>
+
+<table><thead>
+<tr>
+<th>Class</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>NCAuthorization</td>
+<td>used to authorize user.</td>
+</tr>
+<tr>
+<td>NCAccountSignUp</td>
+<td>used to perform new user registration action.</td>
+</tr>
+<tr>
+<td>NCAccountLocaleSet</td>
+<td>used to install specific locale to user.</td>
+</tr>
+<tr>
+<td>NCAccountSettingsGet</td>
+<td>used to receive usr account specific data.</td>
+</tr>
+<tr>
+<td>NCAccountSettingsSet</td>
+<td>used to update user account data.</td>
+</tr>
+<tr>
+<td>NCEmailVerify</td>
+<td>used to initiate email verification process.</td>
+</tr>
+<tr>
+<td>NCEventTrack</td>
+<td>used to track events.</td>
+</tr>
+<tr>
+<td>NCPasswordRecover</td>
+<td>used to initiate password recovery process.</td>
+</tr>
+<tr>
+<td>NCUserDealsList</td>
+<td>used to receive list of deals for authorized user.</td>
+</tr>
+<tr>
+<td>NCCouponRedeem</td>
+<td>used to redeem specific coupon.</td>
+</tr>
+<tr>
+<td>NCDailyAlertsSubscribe</td>
+<td>used to subscribe for category alerts.</td>
+</tr>
+<tr>
+<td>NCOrdersList</td>
+<td>used to get orders list for authorized user.</td>
+</tr>
+<tr>
+<td>NCOrderVouchersGet</td>
+<td>used to get list of order vouchers for authorized user.</td>
+</tr>
+<tr>
+<td>NCStoreOfferClaim</td>
+<td>used to claim store offer.</td>
+</tr>
+<tr>
+<td>NCOrderEmailSend</td>
+<td>used to send email with order details.</td>
+</tr>
+</tbody></table>
+
+<p>Payment accounts related request classes:</p>
+
+<table><thead>
+<tr>
+<th>Class</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>NCPaymentAccountDelete</td>
+<td>used to delete user payment account.</td>
+</tr>
+<tr>
+<td>NCPaymentAccountGet</td>
+<td>used to receive user payment account data.</td>
+</tr>
+<tr>
+<td>NCPaymentAccountSave</td>
+<td>used to save or create user payment account.</td>
+</tr>
+<tr>
+<td>NCPaymentAccountSetDefault</td>
+<td>used to set default user payment account.</td>
+</tr>
+<tr>
+<td>NCPaymentAccountsList</td>
+<td>used to receive user payment accounts list.</td>
+</tr>
+</tbody></table>
+
+<p>Addresses related request classes:</p>
+
+<table><thead>
+<tr>
+<th>Class</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>NCAddressesList</td>
+<td>used to receive user addresses list.</td>
+</tr>
+<tr>
+<td>NCAddressSave</td>
+<td>used to save/create user address.</td>
+</tr>
+<tr>
+<td>NCAddressValidate</td>
+<td>used to validate address data.</td>
+</tr>
+<tr>
+<td>NCAddressDelete</td>
+<td>used to delete user address.</td>
+</tr>
+<tr>
+<td>NCAddressSetDefault</td>
+<td>used to set user address as default.</td>
+</tr>
+</tbody></table>
+
+<p>Application related request classes:</p>
+
+<table><thead>
+<tr>
+<th>Class</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>NCApplicationSettingsGet</td>
+<td>used to receive application settings.</td>
+</tr>
+<tr>
+<td>NCLocaleSettingsGet</td>
+<td>used to receive locale specific settings.</td>
+</tr>
+<tr>
+<td>NCMerchantCategoriesGet</td>
+<td>used to receive categories list.</td>
+</tr>
+<tr>
+<td>NCMerchantTagsGet</td>
+<td>used to receive tags list.</td>
+</tr>
+</tbody></table>
+
+<p>Push notifications related request classes:</p>
+
+<table><thead>
+<tr>
+<th>Class</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>NCPushNotificationDeviceRegister</td>
+<td>used to assign push notification device token to specific user.</td>
+</tr>
+<tr>
+<td>NCPushNotificationSettingsGet</td>
+<td>used to get push notification alerts settings.</td>
+</tr>
+<tr>
+<td>NCPushNotificationSettingsSet</td>
+<td>used to save push notification alerts settings.</td>
+</tr>
+</tbody></table>
+
+<p>Deal infromation related request classes:</p>
+
+<table><thead>
+<tr>
+<th>Class</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>NCClosestCityGet</td>
+<td>used to get closest city by geolocation.</td>
+</tr>
+<tr>
+<td>NCClosestDealGet</td>
+<td>used to get closest deal by geolocation.</td>
+</tr>
+<tr>
+<td>NCContestDealJoin</td>
+<td>used to join contest deal.</td>
+</tr>
+<tr>
+<td>NCDealGet</td>
+<td>used to receive specific deal common data.</td>
+</tr>
+<tr>
+<td>NCDealsList</td>
+<td>used to receive list of deals.</td>
+</tr>
+<tr>
+<td>NCUserShortDealGet</td>
+<td>used to receive user deal data specific to user.</td>
+</tr>
+<tr>
+<td>NCDealShareOptionsGet</td>
+<td>used to get deal sharing options.</td>
+</tr>
+</tbody></table>
+
+<p>Buy request classes:</p>
+
+<table><thead>
+<tr>
+<th>Class</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>NCDealTaxGet</td>
+<td>used to calculate deal tax using zip code.</td>
+</tr>
+<tr>
+<td>NCPromoCodeValidate</td>
+<td>used to validate and calculate promo code amount using promo code.</td>
+</tr>
+<tr>
+<td>NCGiftCardValidate</td>
+<td>used to validate and get gift card balance.</td>
+</tr>
+<tr>
+<td>NCBuyDealGet</td>
+<td>used to receive specific deal data sufficient to perform buy action (deprecated, shopping cart methods should be used instead).</td>
+</tr>
+<tr>
+<td>NCDealBuy</td>
+<td>used to buy deal(deprecated, shopping cart methods should be used instead).</td>
+</tr>
+</tbody></table>
+
+          <h1 id="android-sdk">Android SDK</h1>
+
+<p>Welcome to NimbleCommerce Android SDK. Our SDK is a wrapper around NimbleCommerce API which provides native interfaces to communicate with NimbleCommerce platform.
+This section has general information and recommendation about SDK usage. Out classes are self-documented, you should study class interface and inline documentation before using any SDK class.</p>
+
+          <h2 id="change-log">Change Log</h2>
+
+<p>NimbleCommerce iOS SDK changes</p>
+
+<h3 id="5-4-00">5.4.00</h3>
+
+<ul>
+<li>API version 7 introduced</li>
+<li>Sales tax support, additional documentation can be found in Shopping Cart -&gt; Taxes section </li>
+<li>Shipping support for offline coupons</li>
+<li>Franchise offers support</li>
+<li>Multi offer merchant deals support</li>
+<li>Merchant opt-ins support</li>
+<li>Direct usage of *.nimblecommerce.com endpoints for API access is restricted, *.nimblebuy.com or another FE endpoint should be used instead. SDK will automatically substitute *.nimblecommerce.com with *.nimblebuy.com.</li>
+</ul>
+
+          <h2 id="get-started">Get Started</h2>
+
+<h3 id="setting-up-the-the-android-demo-application">Setting Up the the Android Demo Application</h3>
+
+<ul>
+<li><p>Required developer tools Android Studio &amp; SDK</p></li>
+<li><p>Import gradle project as “Import Project…”</p></li>
+<li><p>There is hierarchy of module’s dependencies, project depends on actionbarsherlock-pulltorefresh library by Chris Banes (https://github.com/chrisbanes/ActionBar-PullToRefresh). Library sources included as source files in library directory and compiled as separated project.</p></li>
+<li><p>Demo application uses gradle (http://www.gradle.org/) and Android gradle plugin (http://tools.android.com/tech-docs/new-build-system/user-guide ) to perform build and distribution process. Application configuration script is build.gradle located inside SdkApplication module. Script contains dependencies description needed by application and automatically resolves this dependencies by loading necessary files from specified repositories. </p></li>
+<li><p>Gradle.properties contains properties for application configuration. Currently it contains set of Google Maps V2 API keys for different build configuration.</p></li>
+</ul>
+
+<h3 id="third-party-libraries">Third Party Libraries</h3>
+
+<ul>
+<li><p>ActionBar-PullToRefresh - This project aims to provide a reusable Pull to Refresh widget https://github.com/chrisbanes/ActionBar-PullToRefresh. Resolved by gradle dependency on /libraries/actionbarsherlock-pulltorefresh.</p></li>
+<li><p>ActionBarSherlock - is an extension of the support library designed to facilitate the use of the action bar design pattern across all versions of Android with a single API. http://actionbarsherlock.com/. Resolved by gradle dependency on android library (com.actionbarsherlock:actionbarsherlock:4.4.0@aar)</p></li>
+<li><p>Android-ViewPagerIndicator - paging indicator widgets that are compatible with the ViewPager from the Android Support Library to improve discoverability of content https://github.com/JakeWharton/Android-ViewPagerIndicator. Resolved by gradle dependency on android library (com.viewpagerindicator:library:2.4.1@aar)</p></li>
+<li><p>Google play services - required for maps feature integration. Resolved by gradle dependency (com.google.android.gms:play-services:4.1.+)</p></li>
+</ul>
+
+<h3 id="merchant-properties">Merchant properties</h3>
+
+<p>File with app configuration for merchant located in /res/raw/app.properties
+The file contains the following properties:</p>
+
+<table><thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>connection.url</td>
+<td>merchant site url, required</td>
+</tr>
+<tr>
+<td>connection.merchant</td>
+<td>merchant id, required</td>
+</tr>
+<tr>
+<td>connection.locale</td>
+<td>merchant locale sites</td>
+</tr>
+<tr>
+<td>connection.port</td>
+<td>site port, 80 by default</td>
+</tr>
+<tr>
+<td>connection.sslport</td>
+<td>secure site port, 443 by default</td>
+</tr>
+<tr>
+<td>connection.apiVersion</td>
+<td>supported api version</td>
+</tr>
+<tr>
+<td>config.country</td>
+<td>merchant country code (uses for zip validation)</td>
+</tr>
+<tr>
+<td>config.cookiesDayExpires</td>
+<td>days to expires user login data, 60 by default</td>
+</tr>
+<tr>
+<td>config.connTimeout</td>
+<td>timeout connection to server API in millis, 60s by default</td>
+</tr>
+<tr>
+<td>config.isShoppingCartEnabled</td>
+<td>use shopping cart instead of usual buy page</td>
+</tr>
+<tr>
+<td>config.isFreeOrdersEnabled</td>
+<td>support free orders in application</td>
+</tr>
+<tr>
+<td>config.locateStartCity</td>
+<td>try to geolocate &amp; select closest city</td>
+</tr>
+</tbody></table>
+
+<aside class="notice">
+Configuration for application locales, represented in connection.locale property
+This is an example of how the value should look: 
+connection.locale=6:en,256:fr
+Where integer values 6, 256 is locale site ids & string values en, fr suffix of values directory for listed locales, e.g. /res/values-en, /res/values-fr.
+</aside>
+
+<h3 id="project-structure">Project structure</h3>
+
+<p>Application uses gradle flavour to provide flexible way of constructing multiple application variants. Demo application contains main directory with all sources and resources and BlueDotDeals flavour and overrides AndroidManifest.xml to add google services support for demo application (google maps and cloud messages). API keys and package identifiers will be replaced to actual one by gradle script when gradle sync is done.</p>
+
+<h3 id="creating-additional-flavour">Creating additional flavour</h3>
+
+<p>To develop your own new application, flavour needs to be applied. You can copy BlueDotDeals file structure and gradle settings or just rename the BlueDotDeals file to meet your requirements. Any source code you need to override (has different behavior or needs code customization and enhancement) should be removed from main directory and added to all flavours working directories, note that source directory path should be the same in all flavours (example, /java/src/nc.app/auth/Account.java should have the same path in bluedotdeals folder if you want override Account.java class). </p>
+
+<h3 id="customization">Customization</h3>
+
+<ul>
+<li>Application Theme implemented according to Android API Guides (http://developer.android.com/guide/topics/ui/themes.html). </li>
+<li>SherlockActionBar customization easy to change with this resource http://jgilfelt.github.com/android-actionbarstylegenerator/</li>
+<li>You can also customize the theme manually. It is /res/values/styles.xml includes styles which you can change. Also, as you know, it is possible to change drawable resources, layouts, dimens, etc.</li>
+</ul>
+
+          <h2 id="sdk-reference">SDK Reference</h2>
+
+<h3 id="loading-deals">Loading Deals</h3>
+
+<p>This is a simple overview of SDK main components and their usages. To get full understanding of application components and SDK usage please use demo application source code.</p>
+
+<blockquote>
+<p>To load deals by different criterias there is gb.android.sdk.Deals async request</p>
+</blockquote>
+<pre class="highlight java"><code><span class="k">new</span> <span class="nf">Deals</span><span class="p">(</span><span class="n">context</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">with</span><span class="o">(</span><span class="n">params</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">Deals</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">GroupBuyList</span> <span class="n">deals</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// Do something with deals</span>
+            <span class="c1">// put to adapter, increase page, etc.</span>
+        <span class="o">}</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">String</span> <span class="n">message</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// Show error</span>
+            <span class="c1">// Do some other stuff</span>
+        <span class="o">}</span>
+    <span class="o">})</span>
+    <span class="o">.</span><span class="na">execute</span><span class="o">();</span> 
+</code></pre>
+
+<blockquote>
+<p>To pass necessary criteria to request there is gb.android.sdk.beans.Params. Filling Params build to setup deals loader</p>
+</blockquote>
+<pre class="highlight java"><code>    <span class="k">new</span> <span class="n">Params</span><span class="o">.</span><span class="na">Builder</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="n">tags</span><span class="o">)</span> <span class="c1">// load deals with specified tags only</span>
+<span class="c1">// only specified types</span>
+        <span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="n">Constants</span><span class="o">.</span><span class="na">Type</span><span class="o">.</span><span class="na">DEAL</span><span class="o">,</span> <span class="n">Constants</span><span class="o">.</span><span class="na">Type</span><span class="o">.</span><span class="na">AFFILIATE</span><span class="o">)</span>
+<span class="c1">// set up sorting</span>
+        <span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="n">Constants</span><span class="o">.</span><span class="na">Sort</span><span class="o">.</span><span class="na">PUBLISHED_DESC</span><span class="o">,</span> <span class="n">Constants</span><span class="o">.</span><span class="na">Sort</span><span class="o">.</span><span class="na">DISTANCE_ASC</span><span class="o">)</span>            <span class="o">.</span><span class="na">category</span><span class="o">(</span><span class="n">cityId</span><span class="o">)</span> <span class="c1">// current city id</span>
+        <span class="o">.</span><span class="na">location</span><span class="o">(</span><span class="n">latitude</span><span class="o">,</span> <span class="n">longitude</span><span class="o">)</span> <span class="c1">// obtained location</span>
+        <span class="o">.</span><span class="na">page</span><span class="o">(</span><span class="n">nextPage</span><span class="o">)</span> <span class="c1">// next page to load</span>
+        <span class="o">.</span><span class="na">size</span><span class="o">(</span><span class="n">listSize</span><span class="o">)</span> <span class="c1">// deals list size</span>
+        <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</code></pre>
+
+<blockquote>
+<p>To get cities there is simple call:</p>
+</blockquote>
+<pre class="highlight java"><code><span class="n">List</span><span class="o">&lt;</span><span class="n">Category</span><span class="o">&gt;</span> <span class="n">categories</span> <span class="o">=</span> <span class="n">Nmb</span><span class="o">.</span><span class="na">getDealsManager</span><span class="o">().</span><span class="na">getMerchantCategories</span><span class="o">();</span>
+</code></pre>
+
+<blockquote>
+<p>To get tags everywhere in code just use next listing</p>
+</blockquote>
+<pre class="highlight java"><code><span class="n">List</span><span class="o">&lt;</span><span class="n">MerchantTag</span><span class="o">&gt;</span> <span class="n">tags</span> <span class="o">=</span> <span class="n">Nmb</span><span class="o">.</span><span class="na">getMerchantManager</span><span class="o">().</span><span class="na">getMerchantTags</span><span class="o">();</span>
+</code></pre>
+
+<blockquote>
+<p>To authorize SDK to load resources which associated with specific customer should be used next listing, call authorize method in async context.</p>
+</blockquote>
+<pre class="highlight java"><code><span class="n">Nmb</span><span class="o">.</span><span class="na">getAuthManager</span><span class="o">().</span><span class="na">authorize</span><span class="o">(</span><span class="n">email</span><span class="o">,</span> <span class="n">password</span><span class="o">);</span>
+</code></pre>
+
+<blockquote>
+<p>To check if SDK has authorization</p>
+</blockquote>
+<pre class="highlight java"><code><span class="n">Nmb</span><span class="o">.</span><span class="na">getAuthManager</span><span class="o">().</span><span class="na">isAuthorized</span><span class="o">();</span>
+</code></pre>
+
+<blockquote>
+<p>After the successful authorization SDK get Authorization Token with 24 hours expiration. Also keeps in secure storage customer credentials. Call for reauthorization when authorization token expired error code returned</p>
+</blockquote>
+<pre class="highlight java"><code><span class="n">Nmb</span><span class="o">.</span><span class="na">getAuthManager</span><span class="o">().</span><span class="na">reauthorize</span><span class="o">();</span>
+</code></pre>
+
+<blockquote>
+<p>To completely clear authorization and saved credentials from SDK should be called</p>
+</blockquote>
+<pre class="highlight java"><code><span class="n">Nmb</span><span class="o">.</span><span class="na">getAuthManager</span><span class="o">().</span><span class="na">deauthorize</span><span class="o">();</span>
+</code></pre>
+
+<blockquote>
+<p>To create new user in the system there is gb.android.sdk.request.SingUpUser async request, pass a valid UserBean to this request.</p>
+</blockquote>
+<pre class="highlight java"><code><span class="k">new</span> <span class="nf">SignUpUser</span><span class="p">(</span><span class="n">context</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">user</span><span class="o">(</span><span class="n">user</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">SignUpUser</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">UserBean</span> <span class="n">user</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// Do authorize with user.email and user.password</span>
+        <span class="o">}</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">String</span> <span class="n">message</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// Show error</span>
+            <span class="c1">// Do some other stuff</span>
+        <span class="o">}</span>
+    <span class="o">})</span>
+    <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+
+<blockquote>
+<p>To authorize SDK using facebook, should be used listing below. If system has restriction on customer age limit and facebook bean has not the field, dateOfBirth parameter should be passed to method.</p>
+</blockquote>
+<pre class="highlight java"><code><span class="n">Nmb</span><span class="o">.</span><span class="na">getAuthManager</span><span class="o">().</span><span class="na">authorize</span><span class="o">(</span><span class="n">facebook</span><span class="o">,</span> <span class="n">dateOfBirth</span><span class="o">);</span>
+</code></pre>
+
+<blockquote>
+<p>To get user data there is gb.android.sdk.request.GetUserSettings.</p>
+</blockquote>
+<pre class="highlight java"><code><span class="k">new</span> <span class="nf">GetUserSettings</span><span class="p">(</span><span class="n">context</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">GetUserSettings</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">UserBean</span> <span class="n">user</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// Use user data</span>
+        <span class="o">}</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">String</span> <span class="n">errorMessage</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// Show error</span>
+            <span class="c1">// Do some other stuff</span>
+        <span class="o">}</span>
+    <span class="o">})</span>
+    <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+
+<blockquote>
+<p>To get user purchases should be called asynchronously method below:</p>
+</blockquote>
+<pre class="highlight java"><code><span class="n">GroupBuyList</span> <span class="n">offersList</span> <span class="o">=</span> <span class="n">Nmb</span><span class="o">.</span><span class="na">getDealsManager</span><span class="o">().</span><span class="na">getMyCouponsList</span><span class="o">(</span><span class="n">page</span><span class="o">,</span> <span class="n">filter</span><span class="o">);</span>
+</code></pre>
+
+<blockquote>
+<p>Load free orders (Store Offer)</p>
+</blockquote>
+<pre class="highlight java"><code><span class="k">new</span> <span class="nf">Orders</span><span class="p">(</span><span class="n">context</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">filter</span><span class="o">(</span><span class="n">filter</span><span class="o">)</span> <span class="c1">// may be available or used</span>
+    <span class="o">.</span><span class="na">offset</span><span class="o">(</span><span class="n">offset</span><span class="o">)</span> <span class="c1">// usually page * limit</span>
+    <span class="o">.</span><span class="na">limit</span><span class="o">(</span><span class="n">limit</span><span class="o">)</span> <span class="c1">// size of elements to load</span>
+    <span class="o">.</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">Orders</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Order</span><span class="o">&gt;</span> <span class="n">orders</span><span class="o">,</span> <span class="n">Iteger</span> <span class="n">totalCount</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// Process orders</span>
+            <span class="c1">// Set to adapter</span>
+        <span class="o">}</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">String</span> <span class="n">message</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// Show error</span>
+            <span class="c1">// Do some other stuff</span>
+        <span class="o">}</span>
+    <span class="o">})</span>
+    <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+
+<blockquote>
+<p>Vouchers (for free offers only). Load vouchers for particular order</p>
+</blockquote>
+<pre class="highlight java"><code><span class="k">new</span> <span class="nf">Vouchers</span><span class="p">(</span><span class="n">context</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">orderId</span><span class="o">(</span><span class="n">orderId</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">Vouchers</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Voucher</span><span class="o">&gt;</span> <span class="n">vouchers</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// render vouchers</span>
+            <span class="o">}</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">String</span> <span class="n">message</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// show error</span>
+                <span class="c1">// Do other stuff</span>
+            <span class="o">}</span>
+        <span class="o">})</span>
+        <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+
+<h3 id="push-notifications">Push Notifications</h3>
+
+<p>To subscribe device to push notifications should add registration and for logged in user only. Use listing below only if SDK has authorization for particular customer. For sure reqistrationId should be obtained in usual way in according to Android Documentation. Also should be implemented receiver and intent service to handle and show notifications, see Documentation and nc.app.GcmIntentService, nc.app.GcmBroadcastReceiver from demo application to get details.</p>
+
+<blockquote>
+<p>Register device token on server</p>
+</blockquote>
+<pre class="highlight java"><code><span class="k">new</span> <span class="nf">RegisterDevice</span><span class="p">(</span><span class="n">context</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">registrationId</span><span class="o">(</span><span class="n">registrationId</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+
+<blockquote>
+<p>To unregister device from push notification use listing below</p>
+</blockquote>
+<pre class="highlight java"><code><span class="k">new</span> <span class="nf">UnregisterDevice</span><span class="p">(</span><span class="n">context</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">registrationId</span><span class="o">(</span><span class="n">registrationId</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+
+<h3 id="shopping-cart">Shopping Cart</h3>
+
+<blockquote>
+<p>Add deal to Shopping Cart, just use</p>
+</blockquote>
+<pre class="highlight java"><code><span class="n">ShoppingCart</span><span class="o">.</span><span class="na">getInstance</span><span class="o">()</span>
+    <span class="o">.</span><span class="na">addItem</span><span class="o">(</span>
+    <span class="k">new</span> <span class="n">ShoppingCartItem</span><span class="o">().</span><span class="na">categoryId</span><span class="o">(</span><span class="n">categoryId</span><span class="o">).</span><span class="na">dealId</span><span class="o">(</span><span class="n">dealId</span><span class="o">),</span>
+        <span class="k">new</span> <span class="n">ShoppingCart</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">()</span> <span class="o">{</span>
+                <span class="c1">// open Shopping Cart activity</span>
+                <span class="c1">// or do some other stuff</span>
+            <span class="o">}</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onFailure</span><span class="o">(</span><span class="n">NCResponse</span> <span class="n">response</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// show error</span>
+                <span class="c1">// if response.getErrorCode() exists</span>
+                <span class="c1">// there is no compatible deals</span>
+            <span class="o">}</span>
+        <span class="o">},</span> <span class="n">context</span><span class="o">);</span>
+</code></pre>
+
+<blockquote>
+<p>To clear Shopping Cart use listing below</p>
+</blockquote>
+<pre class="highlight java"><code>    <span class="n">ShoppingCart</span><span class="o">.</span><span class="na">getInstance</span><span class="o">().</span><span class="na">clear</span><span class="o">();</span>
+</code></pre>
+
+<blockquote>
+<p>Perform loading of Shopping Cart details</p>
+</blockquote>
+<pre class="highlight java"><code>    <span class="n">ShoppingCart</span><span class="o">.</span><span class="na">getInstance</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="k">new</span> <span class="n">ShoppingCart</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">()</span> <span class="o">{</span>
+                <span class="c1">// render and do other stuff</span>
+            <span class="o">}</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onFailure</span><span class="o">(</span><span class="n">NCResponse</span> <span class="n">response</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// perform failure stuff</span>
+            <span class="o">}</span>
+        <span class="o">},</span> <span class="n">context</span><span class="o">);</span>
+</code></pre>
+
+<blockquote>
+<p>Use required information about Shopping Cart and set to view.</p>
+</blockquote>
+<pre class="highlight java"><code>    <span class="n">ShoppingCart</span> <span class="n">shoppingCart</span> <span class="o">=</span> <span class="n">ShoppingCart</span><span class="o">.</span><span class="na">getInstance</span><span class="o">();</span>
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">ShoppingCartItem</span><span class="o">&gt;</span> <span class="n">items</span> <span class="o">=</span> <span class="n">shoppingCart</span><span class="o">.</span><span class="na">items</span><span class="o">();</span>
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">ShortDeal</span><span class="o">&gt;</span> <span class="n">deals</span> <span class="o">=</span> <span class="n">shoppingCart</span><span class="o">.</span><span class="na">deals</span><span class="o">();</span>
+    <span class="n">BillingSettings</span> <span class="n">billing</span> <span class="o">=</span> <span class="n">shoppingCart</span><span class="o">.</span><span class="na">billingSettings</span><span class="o">();</span>
+    <span class="n">BuyOptions</span> <span class="n">options</span> <span class="o">=</span> <span class="n">shoppingCart</span><span class="o">.</span><span class="na">buyOptions</span><span class="o">();</span>
+    <span class="n">UserBillingSettings</span> <span class="n">settings</span> <span class="o">=</span> <span class="n">shoppingCart</span><span class="o">.</span><span class="na">userBillingSettings</span><span class="o">();</span>
+</code></pre>
+
+<h3 id="deals-offers-attributes-etc">Deals, Offers, Attributes, etc.</h3>
+
+<p>Particular item of gb.android.sdk.cart.ShoppingCartItem contains data related to selected info performed by user like gift information, shipping method, quantity, attributes.
+Original data for deals contains in gb.android.sdk.beans.ShortDeal. There are additional  data points related to deal, offers, attributes, shipping, etc.
+To render deals to view, you will need to use the following 2 items: (1) original data about deals from ShortDeal and (2) data for selections from ShoppingCartItem.</p>
+
+<h3 id="prices-and-limits">Prices and limits</h3>
+
+<p>Each offer has field ‘price’ which should be applied for calculations.
+Be careful with limits, particular customer able to select only allowed limit of deal.</p>
+
+<p><code class="prettyprint">shortOffer.quantity</code> - available quantity to select for the offer
+<code class="prettyprint">shortOffer.giftQuantity</code> - available quantity to gift the offer</p>
+
+<p><code class="prettyprint">shortDeal.quantityLimit</code> - available quantity for all child offers
+<code class="prettyprint">shortDeal.quantityGiftLimit</code> - available quantity to gift for all child offers</p>
+
+<p>Deal can be gifted only if <code class="prettyprint">shortDeal.options.hasGifting</code> is <code class="prettyprint">TRUE</code>.</p>
+
+<h3 id="tax">Tax</h3>
+
+<blockquote>
+<p>If particular deal has option shortDeal.options.hasTax=true additional price for shipping should be calculated. Use listing below to do that:</p>
+</blockquote>
+<pre class="highlight java"><code>    <span class="k">new</span> <span class="nf">CalculateTaxPercent</span><span class="p">(</span><span class="n">context</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">address</span><span class="o">(</span><span class="n">selectedAddress</span><span class="o">)</span> <span class="c1">// gb.android.sdk.beans.Address</span>
+        <span class="o">.</span><span class="na">dealIds</span><span class="o">(</span><span class="n">dealIdList</span><span class="o">)</span> <span class="c1">// all deals that has options.hasTax=true</span>
+        <span class="o">.</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">CalculateTaxPercent</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Double</span><span class="o">&gt;</span> <span class="n">taxRates</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// taxRates has key as dealId &amp; value as taxAmount</span>
+                <span class="c1">// should be applied to price of deal</span>
+            <span class="o">}</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">String</span> <span class="n">errorMessage</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// show error</span>
+                <span class="c1">// do some other stuff</span>
+            <span class="o">}</span>
+        <span class="o">})</span>
+        <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+
+<h3 id="shipping-price-deal-amp-offer-level">Shipping Price (Deal &amp; Offer level)</h3>
+
+<p><code class="prettyprint">gb.android.sdk.beans.ShortDeal</code> has optional field <code class="prettyprint">shippingType</code>. If field exists additional price for shipping should be applied for this deal.
+To get price: if <code class="prettyprint">shortDeal.shippingType.methods</code> exist use price from particular item which selected by user, if not exist - use <code class="prettyprint">shippingType.price</code></p>
+
+<p>To know what kind of shipping need to apply to deal use <code class="prettyprint">shippingType.pricingType</code>
+<code class="prettyprint">PricingType.PER_DEAL</code> - should be applied once for deal
+<code class="prettyprint">PricingType.PER_MERCHANT</code> - the same, but if more deals with the same shortDeal.subMerchantId exists should be applied greatest value once.</p>
+
+<p><code class="prettyprint">gb.android.sdk.beans.ShortOffer</code> also has field <code class="prettyprint">shippingType</code>. If field exist additional price for shipping should be applied for this offer.
+To get price: if <code class="prettyprint">shortOffer.shippingType.methods</code> exist use price from particular item which selected by user, if not exist - use <code class="prettyprint">shippingType.price</code></p>
+
+<p>To know what kind of shipping need to apply to offer use <code class="prettyprint">shippingType.pricingType</code>
+<code class="prettyprint">PricingType.PER_OFFER</code> - should be applied once for this offer, because each offer has own shipping price
+<code class="prettyprint">PricingType.PER_ITEM</code> - every offer item should be multiplied on shipping price, so price is <code class="prettyprint">offerPrice * quantity + shippingPrice * quantity</code></p>
+
+<blockquote>
+<p>An promotion code available to be applied to order once. To get discount value which will be applied use listing below.</p>
+</blockquote>
+<pre class="highlight java"><code>    <span class="k">new</span> <span class="nf">PromoCodeAmount</span><span class="p">(</span><span class="n">context</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">dealIds</span><span class="o">(</span><span class="n">dealIdsList</span><span class="o">)</span> <span class="c1">// only shortDeal.options.hasPromoCode=true</span>
+        <span class="o">.</span><span class="na">promoCode</span><span class="o">(</span><span class="n">promoCodeString</span><span class="o">)</span> <span class="c1">// promotion code</span>
+        <span class="o">.</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">PromoCodeAmount</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">PromoCodeAmount</span><span class="o">.</span><span class="na">Response</span> <span class="n">promo</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// apply price of promo code</span>
+                <span class="c1">// promo.type may be AMOUNT or PERCENT</span>
+                <span class="c1">// promo.value is amount to apply</span>
+            <span class="o">}</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">PromoCodeAmount</span><span class="o">.</span><span class="na">Response</span> <span class="n">response</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// show error, do some other stuff</span>
+            <span class="o">}</span>
+        <span class="o">})</span>
+        <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+
+<blockquote>
+<p>One or more gift cards available to apply to order. Use listing below to get information about particular gift card.</p>
+</blockquote>
+<pre class="highlight java"><code>    <span class="k">new</span> <span class="nf">CheckGiftCard</span><span class="p">(</span><span class="n">context</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">cardNumber</span><span class="o">(</span><span class="n">numberString</span><span class="o">)</span> <span class="c1">// gift card number</span>
+        <span class="o">.</span><span class="na">cardPin</span><span class="o">(</span><span class="n">pinString</span><span class="o">)</span> <span class="c1">// gift card pin</span>
+        <span class="o">.</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">CheckGiftCard</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">GiftCard</span> <span class="n">giftCard</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// apply gift card amount giftCard.amount</span>
+            <span class="o">}</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">String</span> <span class="n">errorMessage</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// show error, do other stuff</span>
+            <span class="o">}</span>
+        <span class="o">})</span>
+        <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+
+<h3 id="credits">Credits</h3>
+
+<p>If logged in user has credits available this discount may also be applied. 
+To get the amount of available credits use <code class="prettyprint">order.userBillingSettings().credits()</code>
+Note: credits may be applied only for deals with <code class="prettyprint">shortDeal.options.hasCredits=true</code></p>
+
+<h3 id="addresses">Addresses</h3>
+
+<p>An address should be applied to order if at least one product was added.
+If save address feature is enabled for merchant predefined address available to use.</p>
+
+<blockquote>
+<p>To get the list of addresses for a logged-in user use the code below:</p>
+</blockquote>
+<pre class="highlight java"><code>    <span class="k">new</span> <span class="nf">LoadAddresses</span><span class="p">(</span><span class="n">context</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">LoadAddresses</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">LoadAddresses</span><span class="o">.</span><span class="na">Response</span> <span class="n">response</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// render addresses to list view</span>
+                <span class="c1">// List&lt;Address&gt; addresses = response.addresses</span>
+            <span class="o">}</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">String</span> <span class="n">errorMessage</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// show error, do other stuff</span>
+            <span class="o">}</span>
+        <span class="o">})</span>
+        <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+
+<blockquote>
+<p>It is possible to also change any address or create new one using listing below.</p>
+</blockquote>
+<pre class="highlight java"><code>    <span class="k">new</span> <span class="nf">SaveAddress</span><span class="p">(</span><span class="n">context</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">address</span><span class="o">(</span><span class="n">bean</span><span class="o">)</span> <span class="c1">// gb.android.sdk.beans.Address</span>
+        <span class="o">.</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">SaveAddress</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">Address</span> <span class="n">address</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// do some stuff with address</span>
+            <span class="o">}</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">String</span> <span class="n">errorMessage</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// show error, do other stuff</span>
+            <span class="o">}</span>
+        <span class="o">})</span>
+        <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+
+<blockquote>
+<p>Delete option also available</p>
+</blockquote>
+<pre class="highlight java"><code>    <span class="k">new</span> <span class="nf">DeleteAddress</span><span class="p">(</span><span class="n">context</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">addressId</span><span class="o">(</span><span class="n">id</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">DeleteAddress</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">NCResponse</span> <span class="n">response</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// refresh view, etc.</span>
+            <span class="o">}</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">String</span> <span class="n">errorMessage</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// show error, do other stuff</span>
+            <span class="o">}</span>
+        <span class="o">})</span>
+        <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+
+<h3 id="payment-accounts">Payment Accounts</h3>
+
+<p>An credit card and billing information should be applied to order if total amount of order greater than 0. The user should also be able to use their saved credit card, if one is available to use. </p>
+
+<blockquote>
+<p>To load saved payment information use listing:</p>
+</blockquote>
+<pre class="highlight java"><code>    <span class="k">new</span> <span class="nf">LoadPaymentInfos</span><span class="p">(</span><span class="n">context</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">LoadPaymentInfos</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">LoadPaymentInfos</span><span class="o">.</span><span class="na">Response</span> <span class="n">response</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// render response.paymentInfos</span>
+            <span class="o">}</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">String</span> <span class="n">errorMessage</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// show error, other stuff</span>
+            <span class="o">}</span>
+        <span class="o">})</span>
+        <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+
+<blockquote>
+<p>It is also possible to change any payment method information or create a new one using the code below:</p>
+</blockquote>
+<pre class="highlight java"><code>    <span class="k">new</span> <span class="nf">SavePaymentInfo</span><span class="p">(</span><span class="n">context</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">paymentInfo</span><span class="o">(</span><span class="n">bean</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">SavePaymentInfo</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">SavePaymentInfo</span><span class="o">.</span><span class="na">Response</span> <span class="n">response</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// use response.paymentAccountId                </span>
+            <span class="o">}</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">String</span> <span class="n">errorMessage</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// show error, do other stuff</span>
+            <span class="o">}</span>
+        <span class="o">})</span>
+        <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+
+<blockquote>
+<p>Delete option also available</p>
+</blockquote>
+<pre class="highlight java"><code>    <span class="k">new</span> <span class="nf">DeletePaymentAccount</span><span class="p">(</span><span class="n">context</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">paymentAccountId</span><span class="o">(</span><span class="n">id</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">resultHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">DeletePaymentAccount</span><span class="o">.</span><span class="na">ResultHander</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">(</span><span class="n">NCResponse</span> <span class="n">response</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// update list view</span>
+    <span class="o">}</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="n">onError</span><span class="o">(</span><span class="n">String</span> <span class="n">message</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// show error, do other stuff</span>
+    <span class="o">}</span>
+    <span class="o">})</span>
+    <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+</code></pre>
+
+<h3 id="order">Order</h3>
+
+<p>Before checkout is completed ShoppingCart.CheckoutInfo this should be created.
+This object has fields which represent additional data that should be passed to server API to make complete the proper checkout of the shopping cart. </p>
+
+<p><code class="prettyprint">guestEmail</code> - if SDK does not have authorization and guest checkout enabled for all deals, the field should be passed;
+<code class="prettyprint">dateOfBirth</code> - in format MM/dd/yyyy, should be used next listing to know if show: <code class="prettyprint">Nmb.getMerchantManager().isShownField(SIGN_UP, DATE_OF_BIRTH);</code>
+<code class="prettyprint">credits</code> - amount of credits which has been applied by the user
+<code class="prettyprint">promoCode</code> - string value of promotion code which has been applied by the user
+<code class="prettyprint">shippingAddress</code> - <code class="prettyprint">gb.android.sdk.beans.Address</code>, required if Shopping Cart has at least one product or deal card.
+<code class="prettyprint">billingInfo</code> - <code class="prettyprint">gb.android.sdk.beans.PaymentInfo</code>, required if the total amount of shopping cart value is greater than 0, if field exist credit card will be charged.
+<code class="prettyprint">secureCode</code> - credit card cvv code
+<code class="prettyprint">giftCards</code> - list of gb.android.sdk.beans.GiftCardBuyBean, which applied by user</p>
+
+<blockquote>
+<p>Finally, to complete checkout just use the listing below :</p>
+</blockquote>
+<pre class="highlight java"><code>    <span class="n">ShoppingCart</span><span class="o">.</span><span class="na">getInstance</span><span class="o">().</span><span class="na">checkout</span><span class="o">(</span><span class="n">checkoutInfo</span><span class="o">,</span> 
+            <span class="k">new</span> <span class="n">ShoppingCart</span><span class="o">.</span><span class="na">ResultHandler</span><span class="o">()</span> <span class="o">{</span>
+                <span class="nd">@Override</span>
+                <span class="kd">public</span> <span class="kt">void</span> <span class="n">onSuccess</span><span class="o">()</span> <span class="o">{</span>
+                    <span class="c1">// show confirmation view</span>
+                    <span class="n">ShoppingCart</span><span class="o">.</span><span class="na">getInstance</span><span class="o">().</span><span class="na">clear</span><span class="o">();</span>
+                <span class="o">}</span>
+                <span class="nd">@Override</span>
+                <span class="kd">public</span> <span class="kt">void</span> <span class="n">onFailure</span><span class="o">(</span><span class="n">NCResponse</span> <span class="n">response</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="c1">// show error, do other stuff</span>
+                <span class="o">}</span>
+            <span class="o">},</span> <span class="n">context</span><span class="o">);</span>
+</code></pre>
 
       </div>
       <div class="dark-box">
           <div class="lang-selector">
                 <a href="#" data-language-name="shell">Shell</a>
-                <a href="#" data-language-name="objective_c">Objective-C</a>
-                <a href="#" data-language-name="java">Java</a>
+                <a href="#" data-language-name="objective_c">iOS</a>
+                <a href="#" data-language-name="java">Android</a>
           </div>
       </div>
     </div>
