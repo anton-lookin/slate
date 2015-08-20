@@ -22,15 +22,11 @@ includes:
   - ios/ios_sdk
   - ios/change_log
   - ios/get_started
-  - ios/upgrade_guide
   - ios/sdk_reference
-  - ios/error_handling
   - android/android_sdk
   - android/change_log
   - android/get_started
-  - android/upgrade_guide
   - android/sdk_reference
-  - android/error_handling
 
 search: true
 ---

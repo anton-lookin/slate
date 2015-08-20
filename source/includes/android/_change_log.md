@@ -1,17 +1,14 @@
 ## Change Log
 
-Updated 14 August, 2015
+NimbleCommerce iOS SDK changes
 
-NimbleCommerce Android SDK changes
+### 5.4.00
 
-SDK version 5.4
-
-Shopping Cart API
-- Sales tax support, additional documentation can be found in *Shopping Cart -> Taxes* section
+- API version 7 introduced
+- Sales tax support, additional documentation can be found in Shopping Cart -> Taxes section 
 - Shipping support for offline coupons
-
-SDK version 5.3
-
-General
+- Franchise offers support
+- Multi offer merchant deals support
+- Merchant opt-ins support
 - Direct usage of *.nimblecommerce.com endpoints for API access is restricted, *.nimblebuy.com or another FE endpoint should be used instead. SDK will automatically substitute *.nimblecommerce.com with *.nimblebuy.com.
 
