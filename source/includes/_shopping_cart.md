@@ -577,6 +577,8 @@ Load tax method does not send directly any credit card related information. Bill
 You should never call this method via `http` protocol, use `https` for all Shopping Cart API calls.
 </aside>
 
+**Loading tax amounts for gift items**
+
 Tax amounts loading request has request parameters structure similar to checkout request paramaters, except of missing payment related parameters. Note that you should include gift information with address information in case when you have deal with shipping information (product or coupon with shipping).
 
 **Triggering tax amounts loading:**
