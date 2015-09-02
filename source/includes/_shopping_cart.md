@@ -577,6 +577,8 @@ Load tax method does not send directly any credit card related information. Bill
 You should never call this method via `http` protocol, use `https` for all Shopping Cart API calls.
 </aside>
 
+Tax amounts loading request has request parameters structure similar to checkout request paramaters, except of missing payment related parameters. Note that you should include gift information with address information in case when you have deal with shipping information (product or coupon with shipping).
+
 **Triggering tax amounts loading:**
 
 When you load shopping cart details you got `taxSettings` object for every deal object. 
@@ -730,6 +732,35 @@ taxAddress | object | address for tax calculations, should be used only when tax
 guestEmail | string | email for guest checkout, can't use saved payment accounts or addresses, full credit card information is required if purchase is not cardless (fully covered with discounts).
 dateOfBirth | string | `en_US_POSIX` string with user birth date, optional field, should be filled if required.
 merchantOptIns | array | list of merchant opt ins
+
+*Order item structure*
+
+Parameter | Type | Description
+--------- | --------- | -----------
+dealId | number | deal identifier
+cityId | number | city identifier
+offers | array | array of order item offers
+shippingMethodId | number | shipping method identifier for deal
+isGift | boolean | gifting flag
+giftInfo | object | object with gifting information
+
+*Order offer structure*
+Parameter | Type | Description
+--------- | --------- | -----------
+offerId | number | offer identifier
+count | number | offer count
+shippingMethodId | number | selected shipping method for offer
+attributes | array | selected offer attributes
+
+*Gift information structure*
+Parameter | Type | Description
+--------- | --------- | -----------
+recipientName | string | gift recipient name
+senderName | string | gift sender name
+message | string | gift message
+recipientEmail | string | gift recipient email, used for deals without shipping (product or coupons with shipping)
+addressId | number | gift recipient address, saved address identifier to use for gifting
+address | object | gift recipient address, address object to use for gifting
 
 <aside class="notice">
 You should never call this method via `http` protocol, use `https` for all Shopping Cart API calls.
