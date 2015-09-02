@@ -747,6 +747,7 @@ isGift | boolean | gifting flag
 giftInfo | object | object with gifting information
 
 *Order offer structure*
+
 Parameter | Type | Description
 --------- | --------- | -----------
 offerId | number | offer identifier
@@ -755,6 +756,7 @@ shippingMethodId | number | selected shipping method for offer
 attributes | array | selected offer attributes
 
 *Gift information structure*
+
 Parameter | Type | Description
 --------- | --------- | -----------
 recipientName | string | gift recipient name
